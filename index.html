@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Press AI — Ufficio Stampa Automatizzato</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #b8860b;
+    --gold-light: #c9a84c;
+    --navy: #1a3a5c;
+    --slate: #5a7a9a;
+    --cream: #f7f3ec;
+    --cream-dark: #ede8df;
+    --white: #ffffff;
+    --text: #2c2c2c;
+    --text-muted: #888;
+    --error: #c0392b;
+    --success: #27ae60;
+    --border: #d4c9b0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== PAGES ===== */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; }
+
+  /* ===== LOGIN PAGE ===== */
+  #page-login {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--navy);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #page-login::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(184,134,11,0.15) 0%, transparent 70%);
+    top: -200px; right: -200px;
+  }
+
+  #page-login::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(90,122,154,0.2) 0%, transparent 70%);
+    bottom: -100px; left: -100px;
+  }
+
+  .login-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 20px;
+    padding: 48px 44px;
+    width: 100%;
+    max-width: 440px;
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 1;
+  }
+
+  .login-logo {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .login-logo .brand {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--gold-light);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .login-logo h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    color: var(--white);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .login-logo p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 8px;
+    font-weight: 300;
+  }
+
+  .tabs {
+    display: flex;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 28px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .tab-btn.active {
+    background: var(--gold);
+    color: var(--white);
+  }
+
+  .form-group { margin-bottom: 20px; }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: var(--white);
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .form-group input:focus {
+    border-color: var(--gold-light);
+  }
+
+  .form-group input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    color: var(--white);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary:hover { background: var(--gold-light); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .login-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .login-footer a {
+    color: var(--gold-light);
+    text-decoration: none;
+  }
+
+  .login-footer a:hover {
+    color: var(--white);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .login-footer p {
+    color: rgba(255,255,255,0.3);
+    font-size: 11px;
+    margin-top: 8px;
+  }
+
+  /* Modal documenti legali */
+  .legal-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 2000;
+    overflow-y: auto;
+    padding: 40px 20px;
+  }
+
+  .legal-modal.active {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .legal-content {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 800px;
+    width: 100%;
+    position: relative;
+    margin: auto;
+  }
+
+  .legal-content h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--navy);
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .legal-content .legal-subtitle {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  .legal-content h3 {
+    color: var(--navy);
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+
+  .legal-content p, .legal-content li {
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  .legal-content ul {
+    margin-left: 20px;
+    margin-bottom: 16px;
+  }
+
+  .legal-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+  }
+
+  .legal-content table th,
+  .legal-content table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .legal-content table th {
+    background: var(--cream);
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  .close-modal {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--cream);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text);
+    transition: background 0.2s;
+  }
+
+  .close-modal:hover {
+    background: var(--cream-dark);
+  }
+
+  .plans-preview {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .plan-mini {
+    flex: 1;
+    text-align: center;
+    padding: 12px 8px;
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .plan-mini:hover { border-color: var(--gold-light); background: rgba(184,134,11,0.1); }
+
+  .plan-mini .plan-name {
+    font-size: 11px;
+    color: var(--gold-light);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .plan-mini .plan-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--white);
+    font-weight: 700;
+  }
+
+  .plan-mini .plan-period {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    display: block;
+  }
+
+  .msg { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+  .msg.error { background: rgba(192,57,43,0.2); border: 1px solid rgba(192,57,43,0.4); color: #ff8a80; }
+  .msg.success { background: rgba(39,174,96,0.2); border: 1px solid rgba(39,174,96,0.4); color: #69f0ae; }
+
+  /* ===== APP PAGE ===== */
+  #page-app {
+    flex-direction: column;
+    background: var(--cream);
+  }
+
+  /* Header */
+  .app-header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-logo .logo-mark {
+    width: 32px; height: 32px;
+    background: var(--navy);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    color: var(--gold-light);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .header-logo span {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .plan-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--cream-dark);
+    color: var(--slate);
+  }
+
+  .user-email {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .btn-logout {
+    font-size: 13px;
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+
+  .btn-logout:hover { color: var(--text); border-color: #aaa; }
+
+  /* Layout */
+  .app-body {
+    display: flex;
+    flex: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 40px 32px;
+    gap: 32px;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-section { margin-bottom: 32px; }
+
+  .sidebar-title {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    font-weight: 400;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+
+  .nav-item:hover { background: var(--cream-dark); color: var(--text); }
+  .nav-item.active { background: var(--navy); color: var(--white); font-weight: 500; }
+
+  .nav-item .icon { font-size: 16px; }
+
+  .credits-box {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .credits-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .credits-count {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    color: var(--navy);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .credits-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Main content */
+  .main-content { flex: 1; min-width: 0; }
+
+  /* Views */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* Dashboard view */
+  .welcome-banner {
+    background: var(--navy);
+    border-radius: 16px;
+    padding: 32px;
+    color: var(--white);
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .welcome-banner::after {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(184,134,11,0.2);
+  }
+
+  .welcome-banner h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .welcome-banner p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+    position: relative;
+  }
+
+  .btn-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gold);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 20px;
+    transition: background 0.2s;
+    position: relative;
+  }
+
+  .btn-new:hover { background: var(--gold-light); }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    color: var(--navy);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .recent-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .empty-state {
+    background: var(--white);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 48px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Generator view */
+  .generator-header {
+    margin-bottom: 28px;
+  }
+
+  .generator-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+
+  .generator-header p {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  .phase-indicator {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .phase-step {
+    flex: 1;
+    padding: 14px 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-right: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+
+  .phase-step:last-child { border-right: none; }
+
+  .phase-step.active {
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  .phase-step.done {
+    background: var(--cream-dark);
+    color: var(--gold);
+  }
+
+  .phase-step .step-num {
+    display: block;
+    font-size: 18px;
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 2px;
+  }
+
+  /* Chat interface */
+  .chat-container {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .chat-messages {
+    height: 420px;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .msg-bubble {
+    max-width: 85%;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .msg-bubble.ai {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+
+  .msg-bubble.user {
+    background: var(--navy);
+    color: var(--white);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg-bubble.ai .ai-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .msg-bubble pre {
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .chat-input-area {
+    border-top: 1px solid var(--border);
+    padding: 16px 20px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .chat-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    min-height: 48px;
+    max-height: 120px;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--cream);
+    transition: border-color 0.2s;
+  }
+
+  .chat-input:focus { border-color: var(--slate); }
+
+  .btn-send {
+    width: 48px; height: 48px;
+    background: var(--navy);
+    border: none;
+    border-radius: 8px;
+    color: var(--white);
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .btn-send:hover { background: var(--slate); }
+  .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 14px 18px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    border-bottom-left-radius: 4px;
+    width: fit-content;
+  }
+
+  .typing-dot {
+    width: 6px; height: 6px;
+    background: var(--slate);
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* Archive view */
+  .archive-empty {
+    background: var(--white);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 60px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .release-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .release-card:hover { border-color: var(--slate); }
+
+  .release-info h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .release-info span {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .release-status {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  .status-draft { background: #fff3e0; color: #e65100; }
+  .status-sent { background: #e8f5e9; color: #2e7d32; }
+
+  /* Upgrade banner */
+  .upgrade-banner {
+    background: linear-gradient(135deg, var(--navy) 0%, #2d5a8e 100%);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .upgrade-text h4 {
+    color: var(--white);
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .upgrade-text p {
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+  }
+
+  .btn-upgrade {
+    background: var(--gold);
+    color: var(--white);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  /* Loading */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,58,92,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    display: none;
+  }
+
+  .loading-overlay.show { display: flex; }
+
+  .loading-spinner {
+    text-align: center;
+    color: var(--white);
+  }
+
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(255,255,255,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-spinner p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .app-body { flex-direction: column; padding: 20px 16px; }
+    .sidebar { width: 100%; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Elaborazione in corso...</p>
+  </div>
+</div>
+
+<!-- ===== LOGIN PAGE ===== -->
+<div class="page active" id="page-login">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="brand">Media Comunikiamo</span>
+      <h1>Press AI</h1>
+      <p>Ufficio stampa automatizzato per PMI italiane</p>
+    </div>
+
+    <div id="login-msg"></div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Accedi</button>
+      <button class="tab-btn" onclick="switchTab('register')">Registrati</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="form-login">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="tua@email.it">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Accedi</button>
+    </div>
+
+    <!-- Register form -->
+    <div id="form-register" style="display:none">
+      <div class="form-group">
+        <label>Nome azienda</label>
+        <input type="text" id="reg-company" placeholder="La tua azienda">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="tua@email.it">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Min. 8 caratteri">
+      </div>
+      <button class="btn-primary" onclick="doRegister()">Crea account</button>
+    </div>
+
+    <div class="plans-preview">
+      <a class="plan-mini" href="https://buy.stripe.com/cNi7sK2UOc9HaHZgqt1ZS08" target="_blank">
+        <span class="plan-name">Starter</span>
+        <span class="plan-price">€149</span>
+        <span class="plan-period">al mese</span>
+      </a>
+      <a class="plan-mini" href="https://buy.stripe.com/8x2dR8eDw2z76rJ3DH1ZS07" target="_blank">
+        <span class="plan-name">Professional</span>
+        <span class="plan-price">€249</span>
+        <span class="plan-period">al mese</span>
+      </a>
+      <a class="plan-mini" href="https://buy.stripe.com/4gM14mangc9H3fx2zD1ZS06" target="_blank">
+        <span class="plan-name">Business</span>
+        <span class="plan-price">€399</span>
+        <span class="plan-period">al mese</span>
+      </a>
+    </div>
+
+    <div class="login-footer">
+      <div class="footer-links">
+        <a href="#" onclick="openLegalModal('terms'); return false;">Termini e Condizioni</a>
+        <a href="#" onclick="openLegalModal('privacy'); return false;">Privacy Policy</a>
+        <a href="#" onclick="openLegalModal('cookies'); return false;">Cookie Policy</a>
+      </div>
+      <p>Media Comunikiamo – P.IVA IT04489110967</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP PAGE ===== -->
+<div class="page" id="page-app">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-logo">
+      <div class="logo-mark">P</div>
+      <span>Press AI</span>
+    </div>
+    <div class="header-right">
+      <span class="plan-badge" id="user-plan-badge">Starter</span>
+      <span class="user-email" id="user-email-display"></span>
+      <button class="btn-logout" onclick="doLogout()">Esci</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Menu</div>
+        <button class="nav-item active" onclick="showView('dashboard')">
+          <span class="icon">📊</span> Dashboard
+        </button>
+        <button class="nav-item" onclick="showView('generator')">
+          <span class="icon">✍️</span> Nuovo comunicato
+        </button>
+        <button class="nav-item" onclick="showView('archive')">
+          <span class="icon">📁</span> Archivio
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Il tuo piano</div>
+        <div class="credits-box">
+          <div class="credits-label">Comunicati rimasti</div>
+          <div class="credits-count" id="credits-display">—</div>
+          <div class="credits-sub" id="credits-sub">questo mese</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+      <!-- DASHBOARD VIEW -->
+      <div class="view active" id="view-dashboard">
+        <div class="welcome-banner">
+          <h2>Benvenuta in Press AI</h2>
+          <p>Il tuo ufficio stampa professionale, sempre disponibile.</p>
+          <button class="btn-new" onclick="showView('generator')">
+            ✍️ Nuovo comunicato stampa
+          </button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Comunicati creati</div>
+            <div class="stat-value" id="stat-total">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Inviati questo mese</div>
+            <div class="stat-value" id="stat-month">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Crediti rimasti</div>
+            <div class="stat-value" id="stat-credits">—</div>
+          </div>
+        </div>
+
+        <div class="recent-title">
+          <span>Comunicati recenti</span>
+        </div>
+        <div id="recent-list">
+          <div class="empty-state">
+            <div class="icon">📝</div>
+            <p>Nessun comunicato ancora. Crea il tuo primo!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- GENERATOR VIEW -->
+      <div class="view" id="view-generator">
+        <div class="generator-header">
+          <h2>Nuovo comunicato stampa</h2>
+          <p>Il motore editoriale AI ti guida passo dopo passo.</p>
+        </div>
+
+        <div class="phase-indicator">
+          <div class="phase-step active" id="phase-1">
+            <span class="step-num">1</span>
+            Filtro notizia
+          </div>
+          <div class="phase-step" id="phase-2">
+            <span class="step-num">2</span>
+            Intervista
+          </div>
+          <div class="phase-step" id="phase-3">
+            <span class="step-num">3</span>
+            Angoli editoriali
+          </div>
+          <div class="phase-step" id="phase-4">
+            <span class="step-num">4</span>
+            Redazione
+          </div>
+        </div>
+
+        <div class="chat-container">
+          <div class="chat-messages" id="chat-messages">
+            <div class="msg-bubble ai">
+              <span class="ai-label">Press AI — Redattore</span>
+              Ciao! Sono il motore editoriale di Press AI. Raccontami la notizia che vuoi comunicare: cosa sta succedendo nella tua azienda? Descrivimelo come lo racconteresti a un amico.
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <textarea
+              class="chat-input"
+              id="chat-input"
+              placeholder="Scrivi qui la tua risposta..."
+              rows="1"
+              onkeydown="handleKey(event)"
+            ></textarea>
+            <button class="btn-send" id="btn-send" onclick="sendMessage()">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARCHIVE VIEW -->
+      <div class="view" id="view-archive">
+        <div class="generator-header">
+          <h2>Archivio comunicati</h2>
+          <p>Tutti i comunicati generati con Press AI.</p>
+        </div>
+        <div id="archive-list">
+          <div class="archive-empty">
+            📁 Il tuo archivio è vuoto. I comunicati creati appariranno qui.
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ===== MODAL DOCUMENTI LEGALI ===== -->
+
+<!-- Modal Termini e Condizioni -->
+<div class="legal-modal" id="modal-terms">
+  <div class="legal-content">
+    <button class="close-modal" onclick="closeLegalModal('terms')">&times;</button>
+    <h2>Termini e Condizioni di Vendita</h2>
+    <p class="legal-subtitle">Press AI – pressai.it | app.pressai.it  •  Ultimo aggiornamento: aprile 2026</p>
+    
+    <h3>1. Informazioni sul Titolare</h3>
+    <p>Il servizio Press AI è fornito da <strong>Media Comunikiamo di Sandra Manzi</strong>, agenzia di comunicazione e marketing con sede in Paderno Dugnano (MI), P.IVA 04489110967, di seguito denominata "Fornitore".</p>
+    <p>Per qualsiasi comunicazione: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fa93949c95ba8a889f89899b93d4938e">[email&#160;protected]</a></strong> | <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="addeccc3c9dfcc83c0ccc3d7c4edddc8ce80c0ccc4c183c4d9">[email&#160;protected]</a></strong></p>
+    
+    <h3>2. Oggetto del Contratto</h3>
+    <p>I presenti Termini e Condizioni regolano l'accesso e l'utilizzo della piattaforma Press AI, accessibile all'indirizzo <strong>app.pressai.it</strong>, un servizio SaaS (Software as a Service) che consente alle imprese di creare, gestire e distribuire comunicati stampa e contenuti di ufficio stampa digitale tramite tecnologia di intelligenza artificiale.</p>
+    <p>Il sito <strong>pressai.it</strong> ha funzione informativa e commerciale. Il servizio operativo è erogato esclusivamente tramite <strong>app.pressai.it</strong>.</p>
+    
+    <h3>3. Accettazione dei Termini</h3>
+    <p>L'utilizzo della piattaforma e/o il completamento di un acquisto implicano la piena accettazione dei presenti Termini e Condizioni. Chi non accetta è tenuto ad astenersi dall'utilizzo del servizio.</p>
+    
+    <h3>4. Piani di Abbonamento e Prezzi</h3>
+    <p>Press AI è disponibile nei seguenti piani mensili, con fatturazione anticipata:</p>
+    <ul>
+      <li><strong>Starter</strong>: €149/mese – 3 comunicati, 1 utente</li>
+      <li><strong>Professional</strong>: €249/mese – 10 comunicati, 3 utenti, SEO + media monitoring</li>
+      <li><strong>Business</strong>: €399/mese – comunicati illimitati, 5+ utenti, archivio, supporto prioritario</li>
+    </ul>
+    <p>Le caratteristiche specifiche di ciascun piano sono descritte nelle pagine di prodotto su pressai.it. Il Fornitore si riserva il diritto di modificare i prezzi con preavviso di almeno 30 giorni, comunicato via email all'indirizzo registrato dall'utente. I prezzi si intendono senza IVA.</p>
+    
+    <h3>5. Pagamento</h3>
+    <p>I pagamenti sono gestiti tramite un sistema certificato PCI-DSS. Il Fornitore non tratta né archivia direttamente i dati della carta di credito dell'utente.</p>
+    <p>L'abbonamento si rinnova automaticamente alla scadenza del periodo mensile. L'utente può gestire o cancellare il rinnovo dalla propria area riservata su app.pressai.it. In caso di mancato pagamento, l'accesso alla piattaforma sarà sospeso fino alla regolarizzazione.</p>
+    
+    <h3>6. Registrazione e Account</h3>
+    <p>Per utilizzare Press AI è necessario creare un account personale su app.pressai.it, fornendo dati veritieri e aggiornati. Ogni account è strettamente personale e non cedibile a terzi. L'utente è responsabile della riservatezza delle proprie credenziali.</p>
+    <p>Il Fornitore si riserva il diritto di sospendere o chiudere account in violazione dei presenti Termini.</p>
+    
+    <h3>7. Diritto di Recesso</h3>
+    <p>Ai sensi del D.Lgs. 206/2005 (Codice del Consumo), i consumatori hanno diritto di recedere dal contratto entro 14 giorni dalla sottoscrizione, senza necessità di fornire motivazione, purché il servizio non sia stato già attivato e utilizzato.</p>
+    <p>Qualora l'utente richieda l'attivazione immediata del servizio prima della scadenza del periodo di recesso, il diritto di recesso decade proporzionalmente all'utilizzo effettuato.</p>
+    <p>Per esercitare il recesso: inviare comunicazione scritta a <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fe8d9f909a8c9fd0939f908497be8e9b9dd3939f9792d0978a">[email&#160;protected]</a></strong> con oggetto "Recesso Press AI – [nome account]".</p>
+    <p>I clienti business (persone giuridiche) non beneficiano del diritto di recesso ai sensi del Codice del Consumo.</p>
+    
+    <h3>8. Disdetta dell'Abbonamento</h3>
+    <p>L'utente può disdire l'abbonamento in qualsiasi momento dall'area personale di app.pressai.it o inviando richiesta scritta al Fornitore. La disdetta ha effetto al termine del periodo di fatturazione già pagato. Non sono previsti rimborsi per il periodo residuo, salvo diverso accordo scritto.</p>
+    
+    <h3>9. Utilizzo del Servizio e Responsabilità dell'Utente</h3>
+    <p>L'utente si impegna a utilizzare Press AI in conformità alla legge e ai diritti di terzi. In particolare è vietato:</p>
+    <ul>
+      <li>Utilizzare la piattaforma per diffondere contenuti falsi, diffamatori, illeciti o che violino diritti di proprietà intellettuale</li>
+      <li>Tentare di accedere a dati o funzionalità non autorizzati</li>
+      <li>Effettuare reverse engineering o estrarre il codice sorgente della piattaforma</li>
+      <li>Rivendere o cedere il servizio a terzi senza autorizzazione scritta del Fornitore</li>
+    </ul>
+    <p>L'utente è l'unico responsabile dei contenuti generati tramite la piattaforma e della loro diffusione.</p>
+    
+    <h3>10. Contenuti Generati dall'Intelligenza Artificiale</h3>
+    <p>I testi prodotti dalla piattaforma sono generati con il supporto di tecnologie di intelligenza artificiale. Il Fornitore non garantisce che i contenuti siano sempre accurati, completi o privi di errori. L'utente è tenuto a verificare e revisionare i contenuti prima della loro pubblicazione o diffusione.</p>
+    <p>Il Fornitore non risponde di eventuali danni derivanti dall'utilizzo non verificato dei contenuti generati.</p>
+    
+    <h3>11. Disponibilità del Servizio</h3>
+    <p>Il Fornitore si impegna a garantire la disponibilità della piattaforma in misura non inferiore al 99% su base mensile, fatti salvi interventi di manutenzione programmata ed eventi straordinari al di fuori del controllo del Fornitore (forza maggiore, guasti di infrastrutture terze).</p>
+    
+    <h3>12. Limitazione di Responsabilità</h3>
+    <p>Nei limiti consentiti dalla legge, la responsabilità del Fornitore per danni diretti è limitata all'importo pagato dall'utente nell'ultimo mese di abbonamento. Il Fornitore non risponde di danni indiretti, perdita di dati, mancati guadagni o danni reputazionali.</p>
+    
+    <h3>13. Proprietà Intellettuale</h3>
+    <p>Il software, il design, i loghi, i marchi e i testi della piattaforma Press AI sono di proprietà esclusiva di Media Comunikiamo o dei rispettivi titolari e sono protetti dalla normativa vigente. Nessun elemento può essere riprodotto, distribuito o utilizzato senza autorizzazione scritta.</p>
+    <p>I contenuti generati dall'utente tramite la piattaforma rimangono di proprietà dell'utente, che ne è responsabile ai sensi di legge.</p>
+    
+    <h3>14. Privacy e Trattamento dei Dati</h3>
+    <p>Il trattamento dei dati personali è descritto nell'Informativa sulla Privacy, redatta ai sensi del GDPR (Reg. UE 2016/679) e del D.Lgs. 196/2003 e s.m.i.</p>
+    
+    <h3>15. Modifiche ai Termini</h3>
+    <p>Il Fornitore si riserva il diritto di modificare i presenti Termini in qualsiasi momento. Le modifiche saranno comunicate via email con preavviso di almeno 15 giorni. Il proseguimento nell'utilizzo del servizio dopo tale termine implica accettazione delle nuove condizioni.</p>
+    
+    <h3>16. Legge Applicabile e Foro Competente</h3>
+    <p>I presenti Termini sono regolati dalla legge italiana. Per qualsiasi controversia è competente il Foro di Milano, salvo i casi in cui l'utente sia un consumatore, nel qual caso si applica il foro del luogo di residenza o domicilio del consumatore.</p>
+    
+    <h3>17. Risoluzione Alternativa delle Controversie (ODR)</h3>
+    <p>I consumatori residenti nell'UE possono ricorrere alla piattaforma europea di risoluzione online delle controversie (ODR): <a href="https://ec.europa.eu/consumers/odr" target="_blank">https://ec.europa.eu/consumers/odr</a></p>
+  </div>
+</div>
+
+<!-- Modal Privacy Policy -->
+<div class="legal-modal" id="modal-privacy">
+  <div class="legal-content">
+    <button class="close-modal" onclick="closeLegalModal('privacy')">&times;</button>
+    <h2>Informativa sulla Privacy</h2>
+    <p class="legal-subtitle">Press AI – pressai.it | app.pressai.it  •  Ultimo aggiornamento: aprile 2026</p>
+    
+    <h3>1. Titolare del Trattamento</h3>
+    <p><strong>Media Comunikiamo di Sandra Manzi</strong> – Paderno Dugnano (MI)</p>
+    <p>P.IVA: IT04489110967 | Email: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5e373038311e2e2c3b2d2d3f3770372a">[email&#160;protected]</a></strong> | PEC: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fa899b949e889bd4979b948093ba8a9f99d7979b9396d4938e">[email&#160;protected]</a></strong></p>
+    
+    <h3>2. Tipologie di Dati Raccolti</h3>
+    <p><strong>Dati forniti direttamente dall'utente:</strong></p>
+    <ul>
+      <li>Dati anagrafici e di contatto (nome, cognome, email, ragione sociale, P.IVA)</li>
+      <li>Dati di pagamento (gestiti da provider certificato — il Titolare non li archivia)</li>
+      <li>Contenuti inseriti nella piattaforma (brief aziendali, testi, informazioni di prodotto)</li>
+    </ul>
+    <p><strong>Dati raccolti automaticamente:</strong></p>
+    <ul>
+      <li>Indirizzo IP e dati di navigazione</li>
+      <li>Tipo di browser e dispositivo</li>
+      <li>Pagine visitate e durata della sessione</li>
+      <li>Cookie tecnici e analitici (vedi Cookie Policy)</li>
+    </ul>
+    
+    <h3>3. Finalità e Base Giuridica del Trattamento</h3>
+    <table>
+      <tr>
+        <th>Finalità</th>
+        <th>Base Giuridica</th>
+      </tr>
+      <tr>
+        <td>Erogazione del servizio e gestione account</td>
+        <td>Esecuzione del contratto</td>
+      </tr>
+      <tr>
+        <td>Gestione pagamenti e fatturazione</td>
+        <td>Esecuzione del contratto + obblighi di legge</td>
+      </tr>
+      <tr>
+        <td>Assistenza clienti e comunicazioni di servizio</td>
+        <td>Esecuzione del contratto</td>
+      </tr>
+      <tr>
+        <td>Analisi statistiche e miglioramento del servizio</td>
+        <td>Legittimo interesse del Titolare</td>
+      </tr>
+      <tr>
+        <td>Marketing diretto (newsletter, offerte)</td>
+        <td>Consenso esplicito</td>
+      </tr>
+    </table>
+    
+    <h3>4. Dati Trattati tramite Intelligenza Artificiale</h3>
+    <p>I contenuti inseriti dall'utente nella piattaforma sono elaborati tramite tecnologia di intelligenza artificiale per la generazione dei testi richiesti. I dati trasmessi vengono utilizzati esclusivamente per produrre l'output richiesto e non sono usati per addestrare modelli di terze parti.</p>
+    
+    <h3>5. Conservazione dei Dati</h3>
+    <table>
+      <tr>
+        <th>Tipologia</th>
+        <th>Periodo di Conservazione</th>
+      </tr>
+      <tr>
+        <td>Dati di account e contratto</td>
+        <td>Per la durata del servizio + 10 anni (obbl. fiscali)</td>
+      </tr>
+      <tr>
+        <td>Dati di navigazione e log</td>
+        <td>Massimo 12 mesi</td>
+      </tr>
+      <tr>
+        <td>Contenuti generati dall'utente</td>
+        <td>Fino a cancellazione volontaria o chiusura account</td>
+      </tr>
+      <tr>
+        <td>Dati per marketing</td>
+        <td>Fino a revoca del consenso</td>
+      </tr>
+    </table>
+    
+    <h3>6. Comunicazione a Terzi</h3>
+    <p>I dati sono trattati da fornitori terzi selezionati, nominati Responsabili del Trattamento, nelle seguenti categorie:</p>
+    <ul>
+      <li>Gestore della piattaforma di pagamento (certificato PCI-DSS)</li>
+      <li>Provider di hosting e infrastruttura cloud</li>
+      <li>Provider di database e autenticazione</li>
+      <li>Provider di comunicazioni email transazionali</li>
+      <li>Provider di tecnologia AI per la generazione dei contenuti</li>
+    </ul>
+    <p>Alcuni fornitori hanno sede al di fuori dell'Unione Europea. Il trasferimento dei dati avviene sulla base delle Standard Contractual Clauses approvate dalla Commissione Europea. I dati non sono venduti né ceduti a terzi per finalità commerciali o di marketing.</p>
+    
+    <h3>7. Diritti dell'Interessato</h3>
+    <p>Ai sensi degli Artt. 15-22 del GDPR, l'utente ha diritto di:</p>
+    <ul>
+      <li>Accedere ai propri dati personali</li>
+      <li>Rettificare dati inesatti o incompleti</li>
+      <li>Cancellare i propri dati ("diritto all'oblio")</li>
+      <li>Limitare il trattamento in determinate circostanze</li>
+      <li>Opporsi al trattamento basato su legittimo interesse</li>
+      <li>Portabilità dei dati in formato strutturato</li>
+      <li>Revocare il consenso in qualsiasi momento, senza pregiudizio per i trattamenti precedenti</li>
+    </ul>
+    <p>Per esercitare i propri diritti: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2940474f4669595b4c5a5a484007405d">[email&#160;protected]</a></strong> | <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5f2c3e313b2d3e71323e3125361f2f3a3c72323e363371362b">[email&#160;protected]</a></strong></p>
+    
+    <h3>8. Reclamo all'Autorità di Controllo</h3>
+    <p>L'utente ha il diritto di proporre reclamo al Garante per la Protezione dei Dati Personali: <a href="https://www.garanteprivacy.it" target="_blank">https://www.garanteprivacy.it</a></p>
+    
+    <h3>9. Modifiche alla Privacy Policy</h3>
+    <p>Il Titolare si riserva il diritto di aggiornare la presente informativa. Modifiche rilevanti saranno comunicate via email. La data di "ultimo aggiornamento" in cima al documento è sempre aggiornata.</p>
+  </div>
+</div>
+
+<!-- Modal Cookie Policy -->
+<div class="legal-modal" id="modal-cookies">
+  <div class="legal-content">
+    <button class="close-modal" onclick="closeLegalModal('cookies')">&times;</button>
+    <h2>Cookie Policy</h2>
+    <p class="legal-subtitle">Press AI – pressai.it | app.pressai.it  •  Ultimo aggiornamento: aprile 2026</p>
+    
+    <h3>1. Cosa sono i Cookie</h3>
+    <p>I cookie sono piccoli file di testo che i siti web salvano sul dispositivo dell'utente durante la navigazione. Consentono al sito di funzionare correttamente, ricordare preferenze e raccogliere informazioni statistiche.</p>
+    
+    <h3>2. Cookie Tecnici (necessari) — nessun consenso richiesto</h3>
+    <p>Questi cookie sono indispensabili al funzionamento della piattaforma e non possono essere disattivati.</p>
+    <table>
+      <tr>
+        <th>Cookie</th>
+        <th>Finalità</th>
+        <th>Durata</th>
+      </tr>
+      <tr>
+        <td>session_token</td>
+        <td>Autenticazione utente</td>
+        <td>Sessione</td>
+      </tr>
+      <tr>
+        <td>user_prefs</td>
+        <td>Salvataggio preferenze interfaccia</td>
+        <td>30 giorni</td>
+      </tr>
+      <tr>
+        <td>csrf_token</td>
+        <td>Protezione da attacchi CSRF</td>
+        <td>Sessione</td>
+      </tr>
+    </table>
+    
+    <h3>3. Cookie Analitici — consenso richiesto</h3>
+    <p>Utilizzati per analizzare l'uso del sito e migliorare l'esperienza utente.</p>
+    <table>
+      <tr>
+        <th>Cookie</th>
+        <th>Provider</th>
+        <th>Finalità</th>
+      </tr>
+      <tr>
+        <td>_ga, _gid</td>
+        <td>Google Analytics</td>
+        <td>Statistiche di utilizzo (anonimizzate)</td>
+      </tr>
+    </table>
+    
+    <h3>4. Cookie di Marketing</h3>
+    <p>Al momento pressai.it non utilizza cookie di profilazione o retargeting. Qualora venissero introdotti in futuro, la presente Policy sarà aggiornata con preavviso e richiesta di nuovo consenso.</p>
+    
+    <h3>5. Cookie di Terze Parti</h3>
+    <p>Alcune funzionalità della piattaforma si avvalgono di servizi esterni che possono impostare cookie propri, soggetti alle rispettive informative sulla privacy. Per dettagli consultare le policy dei singoli fornitori di servizi utilizzati.</p>
+    
+    <h3>6. Come Gestire i Cookie</h3>
+    <p><strong>Tramite il banner:</strong><br>Al primo accesso al sito viene mostrato un banner che consente di accettare, rifiutare o personalizzare i cookie non tecnici. La scelta può essere modificata in qualsiasi momento cliccando sui link presenti nel footer del sito.</p>
+    <p><strong>Tramite il browser:</strong><br>È possibile bloccare o eliminare i cookie direttamente dalle impostazioni del browser (Chrome, Firefox, Safari, Edge). La disabilitazione dei cookie tecnici potrebbe compromettere il corretto funzionamento della piattaforma.</p>
+    
+    <h3>7. Aggiornamenti alla Cookie Policy</h3>
+    <p>La presente Policy è aggiornata periodicamente in base all'evoluzione del servizio e della normativa. In caso di modifiche sostanziali, l'utente sarà informato tramite apposito banner o comunicazione email.</p>
+  </div>
+</div>
+
+<script>
+// ===== CONFIG =====
+const SUPABASE_URL = 'https://mvqgonxzhwsfmanvoxpn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12cWdvbnh6aHdzZm1hbnZveHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NDcyNDcsImV4cCI6MjA5MTEyMzI0N30.TZI7XuiDJqfPR8CcGVzPyzvJrNT5y-bggPYg0_L0WSI';
+
+const STRIPE_LINKS = {
+  starter: 'https://buy.stripe.com/cNi7sK2UOc9HaHZgqt1ZS08',
+  professional: 'https://buy.stripe.com/8x2dR8eDw2z76rJ3DH1ZS07',
+  business: 'https://buy.stripe.com/4gM14mangc9H3fx2zD1ZS06'
+};
+
+const PLAN_CREDITS = { starter: 3, professional: 10, business: 999 };
+
+// ===== SUPABASE INIT =====
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ===== STATE =====
+let currentUser = null;
+let currentPlan = 'starter';
+let chatHistory = [];
+let currentPhase = 1;
+
+// ===== AUTH =====
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await loadUserPlan();
+    showApp();
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return showMsg('Inserisci email e password.', 'error');
+
+  showLoading(true);
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  showLoading(false);
+
+  if (error) return showMsg('Credenziali non valide. Controlla email e password.', 'error');
+  currentUser = data.user;
+  await loadUserPlan();
+  showApp();
+}
+
+async function doRegister() {
+  const company = document.getElementById('reg-company').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+
+  if (!company || !email || !password) return showMsg('Compila tutti i campi.', 'error');
+  if (password.length < 8) return showMsg('La password deve essere di almeno 8 caratteri.', 'error');
+
+  showLoading(true);
+  const { data, error } = await sb.auth.signUp({
+    email, password,
+    options: { data: { company_name: company, plan: 'starter', credits_used: 0 } }
+  });
+  showLoading(false);
+
+  if (error) return showMsg(error.message, 'error');
+  showMsg('Account creato! Controlla la tua email per confermare la registrazione, poi acquista un piano per iniziare.', 'success');
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  chatHistory = [];
+  document.getElementById('page-app').classList.remove('active');
+  document.getElementById('page-login').classList.add('active');
+}
+
+async function loadUserPlan() {
+  const meta = currentUser.user_metadata || {};
+  currentPlan = meta.plan || 'starter';
+  const creditsUsed = meta.credits_used || 0;
+  const total = PLAN_CREDITS[currentPlan] === 999 ? '∞' : PLAN_CREDITS[currentPlan];
+  const remaining = PLAN_CREDITS[currentPlan] === 999 ? '∞' : Math.max(0, PLAN_CREDITS[currentPlan] - creditsUsed);
+
+  document.getElementById('user-plan-badge').textContent = currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1);
+  document.getElementById('credits-display').textContent = remaining;
+  document.getElementById('stat-credits').textContent = remaining;
+
+  // Load releases from localStorage
+  const releases = getStoredReleases();
+  document.getElementById('stat-total').textContent = releases.length;
+  document.getElementById('stat-month').textContent = releases.filter(r => {
+    const d = new Date(r.date);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
+  renderRecentList(releases);
+  renderArchive(releases);
+}
+
+function showApp() {
+  document.getElementById('page-login').classList.remove('active');
+  document.getElementById('page-app').classList.add('active');
+  document.getElementById('user-email-display').textContent = currentUser.email;
+}
+
+// ===== NAVIGATION =====
+function showView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  event.currentTarget && event.currentTarget.classList.add('active');
+
+  if (view === 'generator') {
+    document.querySelectorAll('.nav-item')[1].classList.add('active');
+  } else if (view === 'archive') {
+    document.querySelectorAll('.nav-item')[2].classList.add('active');
+  } else {
+    document.querySelectorAll('.nav-item')[0].classList.add('active');
+  }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('login-msg').innerHTML = '';
+}
+
+// ===== CHAT / AI =====
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  addChatMessage(text, 'user');
+  chatHistory.push({ role: 'user', content: text });
+
+  showTyping(true);
+  document.getElementById('btn-send').disabled = true;
+
+  try {
+    // Get current session token
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      throw new Error('Sessione scaduta. Ricarica la pagina.');
+    }
+
+    // Call Netlify Function instead of Anthropic directly
+    const response = await fetch('/api/generate-release', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messages: chatHistory,
+        authToken: session.access_token
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Errore nella risposta del server');
+    }
+
+    const aiText = result.data.content?.[0]?.text || 'Errore nella risposta. Riprova.';
+
+    showTyping(false);
+    addChatMessage(aiText, 'ai');
+    chatHistory.push({ role: 'assistant', content: aiText });
+
+    updatePhase(aiText);
+
+    // Update credits display if returned from backend
+    if (result.creditsRemaining !== undefined) {
+      const remaining = result.creditsRemaining === 999 ? '∞' : result.creditsRemaining;
+      document.getElementById('credits-display').textContent = remaining;
+      document.getElementById('stat-credits').textContent = remaining;
+    }
+
+  } catch (err) {
+    showTyping(false);
+    addChatMessage(err.message || 'Errore di connessione. Riprova.', 'ai');
+    console.error('Error:', err);
+  }
+
+  document.getElementById('btn-send').disabled = false;
+}
+
+function addChatMessage(text, role) {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg-bubble ' + role;
+  if (role === 'ai') {
+    div.innerHTML = '<span class="ai-label">Press AI — Redattore</span><pre>' + escapeHtml(text) + '</pre>';
+  } else {
+    div.textContent = text;
+  }
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping(show) {
+  const container = document.getElementById('chat-messages');
+  const existing = document.getElementById('typing');
+  if (existing) existing.remove();
+
+  if (show) {
+    const div = document.createElement('div');
+    div.id = 'typing';
+    div.className = 'typing-indicator';
+    div.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+function updatePhase(text) {
+  const lower = text.toLowerCase();
+  if (lower.includes('angolo') || lower.includes('angoli editoriali')) {
+    setPhase(3);
+  } else if (lower.includes('comunicato') && lower.includes('sezione')) {
+    setPhase(4);
+    saveRelease(text);
+  } else if (chatHistory.length > 2) {
+    setPhase(2);
+  }
+}
+
+function setPhase(n) {
+  currentPhase = n;
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('phase-' + i);
+    el.classList.remove('active', 'done');
+    if (i < n) el.classList.add('done');
+    else if (i === n) el.classList.add('active');
+  }
+}
+
+// ===== RELEASES =====
+function saveRelease(content) {
+  const releases = getStoredReleases();
+  const title = extractTitle(content);
+  releases.unshift({
+    id: Date.now(),
+    title,
+    date: new Date().toISOString(),
+    status: 'draft',
+    content
+  });
+  localStorage.setItem('pressai_releases_' + currentUser.id, JSON.stringify(releases));
+  renderRecentList(releases);
+  renderArchive(releases);
+  document.getElementById('stat-total').textContent = releases.length;
+}
+
+function getStoredReleases() {
+  if (!currentUser) return [];
+  try {
+    return JSON.parse(localStorage.getItem('pressai_releases_' + currentUser.id) || '[]');
+  } catch { return []; }
+}
+
+function extractTitle(text) {
+  const match = text.match(/TITOLO[:\s]+(.+)/i) || text.match(/^#\s+(.+)/m);
+  return match ? match[1].trim().slice(0, 60) : 'Comunicato del ' + new Date().toLocaleDateString('it-IT');
+}
+
+function renderRecentList(releases) {
+  const container = document.getElementById('recent-list');
+  if (!releases.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>Nessun comunicato ancora. Crea il tuo primo!</p></div>';
+    return;
+  }
+  container.innerHTML = releases.slice(0, 3).map(r => `
+    <div class="release-card">
+      <div class="release-info">
+        <h4>${escapeHtml(r.title)}</h4>
+        <span>${new Date(r.date).toLocaleDateString('it-IT')}</span>
+      </div>
+      <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
+    </div>
+  `).join('');
+}
+
+function renderArchive(releases) {
+  const container = document.getElementById('archive-list');
+  if (!releases.length) {
+    container.innerHTML = '<div class="archive-empty">📁 Il tuo archivio è vuoto.</div>';
+    return;
+  }
+  container.innerHTML = releases.map(r => `
+    <div class="release-card">
+      <div class="release-info">
+        <h4>${escapeHtml(r.title)}</h4>
+        <span>${new Date(r.date).toLocaleDateString('it-IT')}</span>
+      </div>
+      <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
+    </div>
+  `).join('');
+}
+
+/

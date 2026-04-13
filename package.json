@@ -1,0 +1,8 @@
+{
+  "name": "pressai",
+  "version": "1.0.0",
+  "description": "Press AI - Ufficio Stampa Automatizzato",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}
