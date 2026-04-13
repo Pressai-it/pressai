@@ -1758,4 +1758,51 @@ function renderArchive(releases) {
   `).join('');
 }
 
-/
+// ===== UTILS =====
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function showMsg(msg, type) {
+  const el = document.getElementById('login-msg');
+  el.innerHTML = `<div class="msg-${type}">${msg}</div>`;
+}
+
+function showLoading(show) {
+  document.querySelectorAll('.btn-primary').forEach(btn => {
+    btn.disabled = show;
+    btn.textContent = show ? 'Caricamento...' : btn.dataset.originalText || btn.textContent;
+    if (!show && !btn.dataset.originalText) {
+      btn.dataset.originalText = btn.textContent;
+    }
+  });
+}
+
+function openLegalModal(type) {
+  const modal = document.getElementById('modal-' + type);
+  if (modal) modal.classList.add('active');
+}
+
+function closeLegalModal(type) {
+  const modal = document.getElementById('modal-' + type);
+  if (modal) modal.classList.remove('active');
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+  
+  // Close modals on background click
+  document.querySelectorAll('.legal-modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
