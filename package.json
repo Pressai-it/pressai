@@ -1,8 +1,16 @@
 {
-  "name": "pressai",
+  "name": "press-ai",
   "version": "1.0.0",
-  "description": "Press AI - Ufficio Stampa Automatizzato",
+  "description": "Press AI - Ufficio stampa automatizzato",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"No tests specified\""
+  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
+    "@supabase/supabase-js": "^2.45.0",
+    "@anthropic-ai/sdk": "^0.27.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
