@@ -1,97 +1,236 @@
+// =====================================================
+// NETLIFY FUNCTION: generate-release
+// Gestisce generazione comunicati tramite API Anthropic
+// con controllo crediti e aggiornamento database
+// =====================================================
+
 const { createClient } = require('@supabase/supabase-js');
 
-const PLAN_CREDITS = { starter: 3, professional: 10, business: 999 };
+// System prompt (Press AI v2)
+const SYSTEM_PROMPT = `Sei il motore editoriale di Press AI, un ufficio stampa automatizzato per PMI italiane. Il tuo compito è trasformare le informazioni grezze fornite dall'utente in comunicati stampa professionali, scritti con lo stile di un giornalista esperto, pronti per essere distribuiti ai media italiani.
 
-const SYSTEM_PROMPT = `Sei il motore editoriale di Press AI, una piattaforma italiana di ufficio stampa automatizzato per PMI.
-Il tuo ruolo non è generare testo promozionale: sei un giornalista professionista che aiuta gli imprenditori a trasformare le notizie della loro azienda in comunicati stampa credibili, corretti e pubblicabili.
+## FLUSSO EDITORIALE IN 4 FASI
 
-Non sei un assistente generico. Sei un redattore senior con 20 anni di esperienza nelle redazioni italiane.
-Il comunicato deve essere indistinguibile da quello scritto da un professionista umano. Zero aggettivi superlativi. Zero frasi promozionali.
+### FASE 1: FILTRO DI NOTIZIABILITÀ
+Obiettivo: Capire se c'è davvero una notizia da comunicare.
 
-REGOLA ASSOLUTA: Non inventare mai nulla. Se manca un'informazione, fermati e chiedi.
+BLOCCA e CHIEDI se l'utente presenta:
+- Sconti, promozioni, offerte commerciali
+- Messaggi pubblicitari diretti
+- Richieste di pubblicità mascherata
 
-FLUSSO IN 4 FASI:
-FASE 1 — FILTRO NOTIZIABILITÀ: Valuta se il contenuto è notiziabile. Se non lo è (promozioni, autocelebrazione, sconti) blocca e fai domande per trovare la vera notizia.
-FASE 2 — INTERVISTA INTELLIGENTE: Fai domande mirate per estrarre la storia autentica. Chiedi: data/luogo, dati numerici, dichiarazione reale del portavoce, fonte esterna, contatti stampa.
-FASE 3 — 3 ANGOLI EDITORIALI: Prima di scrivere, proponi 3 angoli distinti con titolo, focus, testata target e tono. Chiedi quale preferisce.
-FASE 4 — REDAZIONE PROFESSIONALE: Scrivi il comunicato completo in 11 sezioni: Titolo (max 120 car), Sottotitolo, Lead/Attacco con 5W, Corpo (3-6 paragrafi), Citazione Diretta, Approfondimento, Box Aziendale, Contatti Stampa, Materiali Stampa, Verifica Dati e Fonti, Informazioni Mancanti.
+In questi casi rispondi: "Press AI non produce contenuti promozionali. Un comunicato stampa deve contenere una notizia vera. Cosa c'è di nuovo, diverso o interessante nella tua azienda che meriterebbe l'attenzione dei giornalisti?"
 
-STILE: Piramide rovesciata. Frasi brevi. Nessun superlativo. Verbi all'indicativo.
-PAROLE VIETATE: innovativo, rivoluzionario, all'avanguardia, leader del settore, eccellenza italiana, siamo orgogliosi di, soluzione unica.
+Se NON è evidente una notizia, fai DOMANDE APERTE per far emergere la vera storia:
+- "Cosa è cambiato recentemente nella tua azienda?"
+- "Qual è l'aspetto più innovativo di questo prodotto/servizio?"
+- "Perché un giornalista dovrebbe parlarne ora?"
 
-Dopo il comunicato genera anche: 5 varianti titolo + 3 sottotitoli, pitch email per giornalisti (max 600 battute), post LinkedIn/Facebook/X/Instagram.`;
+PASSA ALLA FASE 2 solo quando hai identificato almeno UNO di questi elementi:
+- Lancio di prodotto/servizio innovativo
+- Investimenti, espansione, nuove sedi
+- Partnership o collaborazioni significative
+- Premi, riconoscimenti, certificazioni
+- Dati di crescita, fatturato, export
+- Trend di mercato con commento esperto
+- Iniziative di sostenibilità con risultati concreti
+
+### FASE 2: INTERVISTA INTELLIGENTE
+Obiettivo: Estrarre le informazioni necessarie per scrivere un comunicato professionale.
+
+Fai DOMANDE MIRATE per ottenere:
+1. **Contesto aziendale**: Storia, settore, dimensioni, posizionamento
+2. **Elemento di unicità**: Cosa distingue questa azienda/prodotto dai concorrenti?
+3. **Dati concreti**: Numeri, percentuali, tempistiche, investimenti
+4. **Quote**: Chi parla a nome dell'azienda? (CEO, founder, responsabile)
+
+NON accettare risposte generiche. Se mancano dettagli, RICHIEDI:
+- "Quante persone impiegate? Qual è il fatturato?"
+- "Quali aziende fanno qualcosa di simile? Perché voi siete diversi?"
+- "Dammi UN numero che racconta questa storia (una crescita, un investimento, un risultato)"
+
+PASSA ALLA FASE 3 quando hai raccolto abbastanza materiale per scrivere 300 parole di contenuto giornalistico.
+
+### FASE 3: PROPOSTA ANGOLI EDITORIALI
+Obiettivo: Offrire all'utente 3 modi diversi di raccontare la stessa storia.
+
+Presenta TRE ANGOLI differenziati:
+
+**ANGOLO 1 - INNOVAZIONE / PRODOTTO**
+Focus: La tecnologia, il metodo, la caratteristica distintiva
+Target: Testate tech, verticali di settore
+Esempio: "Startup milanese lancia il primo [X] che [Y]"
+
+**ANGOLO 2 - BUSINESS / CRESCITA**
+Focus: Numeri, mercato, strategia aziendale
+Target: Economia, finanza, business
+Esempio: "PMI italiana cresce del X% grazie a [strategia]"
+
+**ANGOLO 3 - TERRITORIO / MADE IN ITALY**
+Focus: Impatto locale, eccellenza italiana, sostenibilità
+Target: Cronaca locale, lifestyle, food/design
+Esempio: "[Regione]: l'azienda [X] porta l'innovazione nel settore [Y]"
+
+Chiedi: "Quale angolo preferisci? Oppure vuoi che li combini?"
+
+### FASE 4: REDAZIONE COMUNICATO STAMPA
+Obiettivo: Scrivere il comunicato finale con standard giornalistici professionali.
+
+## STRUTTURA OBBLIGATORIA (11 sezioni)
+
+**1. TITOLO**
+- Max 80 caratteri
+- Stile giornalistico (non pubblicitario)
+- Include: CHI + FA COSA + RISULTATO/NOVITÀ
+
+**2. SOTTOTITOLO**
+- Max 120 caratteri
+- Espande il titolo con un dettaglio chiave
+
+**3. CITTÀ, DATA**
+Formato: "Milano, 20 aprile 2026 –"
+
+**4. LEAD (primo paragrafo)**
+Contiene le 5W: Who, What, When, Where, Why
+Lunghezza: 60-80 parole
+
+**5. CORPO - DETTAGLI TECNICI / INNOVAZIONE**
+150-200 parole
+
+**6. CORPO - CONTESTO AZIENDALE**
+80-100 parole
+
+**7. DICHIARAZIONE (Quote)**
+80-120 parole
+
+**8. APPLICAZIONI / CASI D'USO**
+60-80 parole
+
+**9. DISPONIBILITÀ E CONTATTI**
+30-50 parole
+
+**10. NOTA SULL'AZIENDA (Boilerplate)**
+60-80 parole
+
+**11. CONTATTI STAMPA**
+
+## REGOLE ANTI-ALLUCINAZIONE (CRITICHE)
+
+❌ **VIETATO INVENTARE:**
+- Nomi di persone, partnership, premi, certificazioni
+- Dati numerici (fatturato, crescita, investimenti)
+- Quote o dichiarazioni
+- Fonti esterne o studi citati
+
+✅ **SE L'UTENTE NON HA FORNITO:**
+- Chiedi prima di procedere
+
+## FONTI AUTOREVOLI
+Ogni comunicato DEVE includere 2-3 LINK A FONTI ESTERNE di alta qualità (ISTAT, Ministeri, Sole 24 Ore, ecc.)
+
+## STILE E TONO
+✅ Linguaggio giornalistico neutro
+✅ Verbi al presente o passato prossimo
+✅ Frasi brevi (max 25 parole)
+✅ Numeri concreti
+
+❌ EVITA:
+- Superlativi pubblicitari ("il migliore", "rivoluzionario")
+- Linguaggio marketing
+- Toni promozionali
+
+Ricorda: Il tuo obiettivo è produrre un testo che un giornalista possa pubblicare così com'è.`;
 
 exports.handler = async (event, context) => {
-  // CORS headers
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json'
-  };
-
-  // Handle OPTIONS request
+  // CORS preflight
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      },
+      body: ''
+    };
   }
 
-  // Only allow POST
+  // Solo POST
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers,
+      headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: 'Method not allowed' })
     };
   }
 
   try {
-    // Parse request body
+    // Parse body
     const { messages, authToken } = JSON.parse(event.body);
 
-    if (!messages || !authToken) {
+    if (!messages || !Array.isArray(messages)) {
       return {
         statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'Missing required fields' })
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ error: 'Invalid messages format' })
       };
     }
 
-    // Initialize Supabase client
+    // Init Supabase con service key (accesso admin)
     const supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_ANON_KEY
+      process.env.SUPABASE_SERVICE_KEY
     );
 
-    // Verify user authentication
+    // Verifica utente da authToken
     const { data: { user }, error: authError } = await supabase.auth.getUser(authToken);
     
     if (authError || !user) {
       return {
         statusCode: 401,
-        headers,
-        body: JSON.stringify({ error: 'Non autenticato' })
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ error: 'Unauthorized' })
       };
     }
 
-    // Get user plan and credits
-    const userMeta = user.user_metadata || {};
-    const currentPlan = userMeta.plan || 'starter';
-    const creditsUsed = userMeta.credits_used || 0;
-    const maxCredits = PLAN_CREDITS[currentPlan];
+    // Carica profilo utente
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
 
-    // Check if user has credits (skip for business plan with unlimited)
-    if (maxCredits !== 999 && creditsUsed >= maxCredits) {
+    if (profileError || !profile) {
       return {
-        statusCode: 403,
-        headers,
-        body: JSON.stringify({ 
-          error: 'Crediti esauriti',
-          message: 'Hai esaurito i comunicati disponibili per questo mese. Effettua l\'upgrade per continuare.'
-        })
+        statusCode: 404,
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ error: 'User profile not found' })
       };
     }
 
-    // Call Anthropic API
+    // Verifica crediti (solo per comunicati completi - fase 4)
+    const isCompletingRelease = messages.some(m => 
+      m.role === 'user' && 
+      (m.content.toLowerCase().includes('angolo') || m.content.toLowerCase().includes('preferisco'))
+    );
+
+    if (isCompletingRelease) {
+      const maxCredits = profile.plan === 'business' ? 999 : (profile.plan === 'professional' ? 10 : 3);
+      const remaining = maxCredits - profile.credits_used;
+
+      if (remaining <= 0 && profile.plan !== 'business') {
+        return {
+          statusCode: 403,
+          headers: { 'Access-Control-Allow-Origin': '*' },
+          body: JSON.stringify({ 
+            error: 'Crediti esauriti. Effettua l\'upgrade del piano per continuare.',
+            creditsRemaining: 0
+          })
+        };
+      }
+    }
+
+    // Chiamata API Anthropic
     const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -101,7 +240,7 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
+        max_tokens: 4096,
         system: SYSTEM_PROMPT,
         messages: messages
       })
@@ -111,37 +250,57 @@ exports.handler = async (event, context) => {
       const errorData = await anthropicResponse.json();
       console.error('Anthropic API error:', errorData);
       return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: 'Errore API Anthropic', details: errorData })
+        statusCode: anthropicResponse.status,
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ error: errorData.error?.message || 'Anthropic API error' })
       };
     }
 
-    const aiData = await anthropicResponse.json();
+    const result = await anthropicResponse.json();
 
-    // Check if response contains a complete press release (Phase 4)
-    const aiText = aiData.content?.[0]?.text || '';
-    const isCompleteRelease = aiText.toLowerCase().includes('comunicato') && 
-                              aiText.toLowerCase().includes('sezione');
+    // Se è un comunicato completo (fase 4), incrementa crediti
+    const responseText = result.content?.[0]?.text || '';
+    if (responseText.includes('**TITOLO**') || responseText.includes('TITOLO:')) {
+      // Incrementa crediti usati
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ credits_used: profile.credits_used + 1 })
+        .eq('id', user.id);
 
-    // Update credits only if this is a complete release
-    if (isCompleteRelease && maxCredits !== 999) {
-      const newCreditsUsed = creditsUsed + 1;
-      
-      await supabase.auth.updateUser({
-        data: { credits_used: newCreditsUsed }
-      });
+      if (updateError) {
+        console.error('Error updating credits:', updateError);
+      }
+
+      // Salva release nel database
+      const { error: releaseError } = await supabase
+        .from('releases')
+        .insert({
+          user_id: user.id,
+          title: extractTitle(responseText),
+          content: responseText,
+          status: 'draft',
+          phase: 4
+        });
+
+      if (releaseError) {
+        console.error('Error saving release:', releaseError);
+      }
     }
 
-    // Return AI response
+    // Calcola crediti rimanenti aggiornati
+    const maxCredits = profile.plan === 'business' ? 999 : (profile.plan === 'professional' ? 10 : 3);
+    const newCreditsUsed = profile.credits_used + (responseText.includes('**TITOLO**') ? 1 : 0);
+    const creditsRemaining = maxCredits - newCreditsUsed;
+
     return {
       statusCode: 200,
-      headers,
+      headers: { 
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        success: true,
-        data: aiData,
-        creditsUsed: isCompleteRelease ? (maxCredits !== 999 ? creditsUsed + 1 : creditsUsed) : creditsUsed,
-        creditsRemaining: maxCredits === 999 ? 999 : Math.max(0, maxCredits - (isCompleteRelease ? creditsUsed + 1 : creditsUsed))
+        data: result,
+        creditsRemaining: profile.plan === 'business' ? 999 : creditsRemaining
       })
     };
 
@@ -149,11 +308,14 @@ exports.handler = async (event, context) => {
     console.error('Function error:', error);
     return {
       statusCode: 500,
-      headers,
-      body: JSON.stringify({ 
-        error: 'Errore del server',
-        message: error.message 
-      })
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ error: error.message || 'Internal server error' })
     };
   }
 };
+
+// Helper: estrae titolo dal comunicato
+function extractTitle(text) {
+  const match = text.match(/\*\*TITOLO\*\*[:\s]*\n(.+)/m) || text.match(/TITOLO[:\s]+(.+)/i);
+  return match ? match[1].trim().slice(0, 100) : 'Comunicato stampa';
+}
