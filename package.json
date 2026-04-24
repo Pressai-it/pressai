@@ -1,16 +1,8 @@
 {
-  "name": "press-ai",
+  "name": "pressai-netlify-functions",
   "version": "1.0.0",
-  "description": "Press AI - Ufficio stampa automatizzato",
-  "main": "index.html",
-  "scripts": {
-    "test": "echo \"No tests specified\""
-  },
+  "description": "Netlify Functions for Press AI",
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0",
-    "@anthropic-ai/sdk": "^0.27.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "node-fetch": "^2.6.7"
   }
 }
