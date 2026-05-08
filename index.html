@@ -907,6 +907,48 @@
     font-style: italic;
   }
 
+  .outlet-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .outlet-phone {
+    font-size: 13px;
+    color: var(--slate);
+  }
+
+  .press-monitoring {
+    background: linear-gradient(135deg, var(--cream-dark) 0%, var(--white) 100%);
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+
+  .press-monitoring h4 {
+    font-size: 16px;
+    color: var(--navy);
+    margin-bottom: 12px;
+  }
+
+  .press-monitoring p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .press-monitoring ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .press-monitoring li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 6px 0;
+  }
+
   /* Archive view */
   .archive-empty {
     background: var(--white);
@@ -1319,14 +1361,14 @@ const PLAN_CREDITS = {
 };
 
 const MEDIA_OUTLETS = [
-  { name: 'ANSA', email: 'redazione@ansa.it' },
-  { name: 'Il Sole 24 Ore', email: 'redazione@ilsole24ore.com' },
-  { name: 'Corriere della Sera', email: 'economia@corriere.it' },
-  { name: 'La Repubblica', email: 'redazione.economia@repubblica.it' },
-  { name: 'Milano Finanza', email: 'redazione@milanofinanza.it' },
-  { name: 'Il Giornale', email: 'redazione@ilgiornale.it' },
-  { name: 'AGI', email: 'redazione@agi.it' },
-  { name: 'AdnKronos', email: 'redazione@adnkronos.com' }
+  { name: 'ANSA', email: 'redazione@ansa.it', phone: '+39 06 677881' },
+  { name: 'Il Sole 24 Ore', email: 'redazione@ilsole24ore.com', phone: '+39 02 3022 4650' },
+  { name: 'Corriere della Sera', email: 'economia@corriere.it', phone: '+39 02 6339' },
+  { name: 'La Repubblica', email: 'redazione.economia@repubblica.it', phone: '+39 06 49821' },
+  { name: 'Milano Finanza', email: 'redazione@milanofinanza.it', phone: '+39 02 58219 1' },
+  { name: 'Il Giornale', email: 'redazione@ilgiornale.it', phone: '+39 02 85661' },
+  { name: 'AGI', email: 'redazione@agi.it', phone: '+39 06 37352' },
+  { name: 'AdnKronos', email: 'redazione@adnkronos.com', phone: '+39 06 577861' }
 ];
 
 // ===== SUPABASE INIT =====
@@ -1343,7 +1385,51 @@ let trialEndDate = null;
 let isTrialActive = false;
 
 // ===== SYSTEM PROMPT =====
-const SYSTEM_PROMPT = `Sei il motore editoriale di Press AI, un ufficio stampa automatizzato per PMI italiane. Guidami attraverso 4 fasi: Filtro notizia, Intervista, Angoli editoriali, Redazione. Scrivi comunicati giornalistici professionali evitando toni promozionali. NON inventare dati, quote o partnership.`;
+const SYSTEM_PROMPT = `Sei il motore editoriale di Press AI. Scrivi comunicati stampa come li scriverebbe un GIORNALISTA PROFESSIONISTA della cronaca economica italiana - mai come un marketer o una startup.
+
+FASI OPERATIVE:
+1. FILTRO NOTIZIA: verifica che ci sia una notizia reale (non promozionale)
+2. INTERVISTA: fai domande per estrarre dettagli concreti, verificabili, con dati
+3. ANGOLI EDITORIALI: proponi 3 angoli giornalistici. L'utente ne sceglie UNO.
+4. REDAZIONE: scrivi SOLO il comunicato dell'angolo scelto
+
+TONO GIORNALISTICO OBBLIGATORIO:
+- Scrivi come Il Sole 24 Ore, non come TechCrunch
+- Stile: cronaca economica italiana, neutrale, fattuale
+- Nessun entusiasmo artificiale
+- Nessuna retorica da pitch
+- Come se dovesse uscire su ANSA domani mattina
+
+PAROLE ASSOLUTAMENTE VIETATE:
+❌ rivoluziona/rivoluzionario
+❌ democratizza/democratizzare  
+❌ scalabile/scalabilità
+❌ innovazione consolidata
+❌ sfida vinta
+❌ game changer
+❌ disruptivo
+❌ ecosistema digitale
+❌ next-level
+❌ cutting-edge
+❌ breakthrough
+
+OBBLIGATORIO IN OGNI COMUNICATO:
+✅ Dati concreti: fatturati, numeri dipendenti, date precise, % crescita
+✅ Contesto settoriale verificabile
+✅ Citazioni dirette sobrie (mai autocelebrative)
+✅ Informazioni di servizio concrete
+
+DOPO IL COMUNICATO:
+- NON aggiungere auguri ("Buona fortuna", "In bocca al lupo")
+- NON usare emoji 🚀
+- Termina con il comunicato, punto
+
+REGOLA ANTI-FUFFA:
+Se il comunicato suona come una brochure aziendale → RISCRIVI in stile cronaca
+Se useresti un'esclamazione → TOGLILA
+Se una frase inizia con "Finalmente" o "Oggi più che mai" → CANCELLALA
+
+Scrivi come scrivono i giornalisti professionisti italiani che hanno 20 anni di esperienza in redazioni economiche.`;
 
 // ===== AUTH =====
 async function init() {
@@ -1736,14 +1822,20 @@ function showTyping(show) {
 function updatePhase(text) {
   const lower = text.toLowerCase();
   
-  if (lower.includes('titolo') && (lower.includes('sottotitolo') || lower.includes('lead'))) {
+  // FASE 4: Comunicato generato → mostra contatti
+  if ((lower.includes('titolo') || lower.includes('sottotitolo') || lower.includes('lead')) && 
+      (lower.includes('contatti') || text.length > 800)) {
     setPhase(4);
     saveRelease(text);
     incrementCreditsUsed();
-    showMediaOutlets();
-  } else if (lower.includes('angolo') || lower.includes('angoli editoriali')) {
+    showMediaOutlets();  // Mostra STEP 4 con contatti
+  } 
+  // FASE 3: Proposta angoli editoriali
+  else if (lower.includes('angolo') || lower.includes('angoli editoriali')) {
     setPhase(3);
-  } else if (chatHistory.length > 2) {
+  } 
+  // FASE 2: Intervista in corso
+  else if (chatHistory.length > 2) {
     setPhase(2);
   }
 }
@@ -1779,15 +1871,19 @@ function showMediaOutlets() {
   
   section.style.display = 'block';
   
+  // TRIAL: Solo nomi testate, email nascoste
   if (isTrialActive) {
     trialNotice.style.display = 'block';
+    trialNotice.textContent = '🔒 Stai usando la prova gratuita. Acquista un piano per accedere ai contatti delle redazioni.';
     list.innerHTML = MEDIA_OUTLETS.map(outlet => `
       <div class="outlet-item">
         <div class="outlet-name">📰 ${outlet.name}</div>
         <div class="outlet-email hidden">🔒 Email disponibile nei piani a pagamento</div>
       </div>
     `).join('');
-  } else {
+  } 
+  // STARTER: Nomi + Email
+  else if (currentPlan === 'starter') {
     trialNotice.style.display = 'none';
     list.innerHTML = MEDIA_OUTLETS.map(outlet => `
       <div class="outlet-item">
@@ -1795,6 +1891,43 @@ function showMediaOutlets() {
         <div class="outlet-email">${outlet.email}</div>
       </div>
     `).join('');
+  }
+  // PROFESSIONAL: Nomi + Email + Telefoni
+  else if (currentPlan === 'professional') {
+    trialNotice.style.display = 'none';
+    list.innerHTML = MEDIA_OUTLETS.map(outlet => `
+      <div class="outlet-item">
+        <div class="outlet-name">📰 ${outlet.name}</div>
+        <div class="outlet-contact">
+          <div class="outlet-email">✉️ ${outlet.email}</div>
+          <div class="outlet-phone">📞 ${outlet.phone}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+  // BUSINESS: Nomi + Email + Telefoni + Rassegna Stampa
+  else if (currentPlan === 'business') {
+    trialNotice.style.display = 'none';
+    list.innerHTML = MEDIA_OUTLETS.map(outlet => `
+      <div class="outlet-item">
+        <div class="outlet-name">📰 ${outlet.name}</div>
+        <div class="outlet-contact">
+          <div class="outlet-email">✉️ ${outlet.email}</div>
+          <div class="outlet-phone">📞 ${outlet.phone}</div>
+        </div>
+      </div>
+    `).join('') + `
+      <div class="press-monitoring">
+        <h4>📊 Rassegna Stampa Automatica</h4>
+        <p>Con il piano Business, riceverai una rassegna stampa automatica ogni volta che il tuo comunicato viene pubblicato.</p>
+        <ul>
+          <li>🔍 Monitoraggio quotidiano delle pubblicazioni</li>
+          <li>📈 Report di copertura mediatica</li>
+          <li>📰 Articoli con link diretti</li>
+          <li>📧 Notifiche via email in tempo reale</li>
+        </ul>
+      </div>
+    `;
   }
 }
 
