@@ -1823,8 +1823,10 @@ function updatePhase(text) {
   const lower = text.toLowerCase();
   
   // FASE 4: Comunicato generato → mostra contatti
-  if ((lower.includes('titolo') || lower.includes('sottotitolo') || lower.includes('lead')) && 
-      (lower.includes('contatti') || text.length > 800)) {
+  // Pattern di riconoscimento: "comunicato stampa" all'inizio + data città, o lunghezza significativa
+  if (lower.includes('**comunicato stampa**') || 
+      (lower.includes('comunicato stampa') && text.length > 600) ||
+      (lower.match(/\b(milano|roma|torino|firenze|bologna|napoli|venezia|genova),\s+\w+\s+202[0-9]/i))) {
     setPhase(4);
     saveRelease(text);
     incrementCreditsUsed();
