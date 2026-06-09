@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -1079,6 +1080,99 @@
     .stats-grid { grid-template-columns: 1fr 1fr; }
     .trial-banner { flex-direction: column; gap: 12px; text-align: center; }
   }
+
+  /* Modal Styles */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 700px;
+    width: 100%;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+  }
+
+  .modal-close:hover {
+    color: #333;
+  }
+
+  .modal-content h2 {
+    color: var(--navy);
+    margin-bottom: 10px;
+    font-size: 24px;
+  }
+
+  .modal-content h3 {
+    color: var(--navy);
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+
+  .modal-content h4 {
+    color: var(--navy);
+    margin-top: 15px;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .modal-content p, .modal-content ul {
+    color: #333;
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  .modal-content ul {
+    margin-left: 20px;
+  }
+
+  .modal-content ul li {
+    margin-bottom: 8px;
+  }
+
+  .modal-content a {
+    color: var(--gold-light);
+    text-decoration: none;
+  }
+
+  .modal-content a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 600px) {
+    .modal-content {
+      padding: 25px;
+    }
+    .modal-content h2 {
+      font-size: 20px;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -1131,9 +1225,44 @@
         <input type="email" id="reg-email" placeholder="tua@email.it">
       </div>
       <div class="form-group">
+        <label>Telefono</label>
+        <input type="tel" id="reg-phone" placeholder="+39 3XX XXX XXXX">
+      </div>
+      <div class="form-group">
         <label>Password</label>
         <input type="password" id="reg-password" placeholder="Min. 8 caratteri">
       </div>
+      
+      <details style="margin: 15px 0; padding: 10px; background: #f8f8f8; border-radius: 5px;">
+        <summary style="cursor: pointer; font-weight: bold; color: #1A3A5C;">📋 Dati fiscali (facoltativo per trial)</summary>
+        <div style="margin-top: 15px;">
+          <div class="form-group">
+            <label>Partita IVA</label>
+            <input type="text" id="reg-piva" placeholder="IT00000000000">
+          </div>
+          <div class="form-group">
+            <label>Ragione Sociale</label>
+            <input type="text" id="reg-ragione" placeholder="Nome legale azienda">
+          </div>
+          <div class="form-group">
+            <label>Indirizzo</label>
+            <input type="text" id="reg-indirizzo" placeholder="Via/Piazza, numero">
+          </div>
+          <div class="form-group">
+            <label>Città</label>
+            <input type="text" id="reg-city" placeholder="Milano">
+          </div>
+          <div class="form-group">
+            <label>Provincia</label>
+            <input type="text" id="reg-provincia" placeholder="MI" maxlength="2">
+          </div>
+          <div class="form-group">
+            <label>CAP</label>
+            <input type="text" id="reg-cap" placeholder="20100" maxlength="5">
+          </div>
+        </div>
+      </details>
+      
       <button class="btn-primary" onclick="doRegister()">Inizia prova gratuita (7 giorni)</button>
     </div>
 
@@ -1157,12 +1286,169 @@
 
     <div class="login-footer">
       <div class="footer-links">
-        <a href="#" onclick="alert('Termini e Condizioni'); return false;">Termini e Condizioni</a>
-        <a href="#" onclick="alert('Privacy Policy'); return false;">Privacy Policy</a>
-        <a href="#" onclick="alert('Cookie Policy'); return false;">Cookie Policy</a>
+        <a href="#" onclick="openModal('terms-modal'); return false;">Termini e Condizioni</a>
+        <a href="#" onclick="openModal('privacy-modal'); return false;">Privacy Policy</a>
+        <a href="#" onclick="openModal('cookies-modal'); return false;">Cookie Policy</a>
       </div>
       <p>Media Comunikiamo – P.IVA IT04489110967</p>
     </div>
+  </div>
+</div>
+
+<!-- MODALI -->
+<!-- Termini e Condizioni Modal -->
+<div id="terms-modal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+    <button class="modal-close" onclick="closeModal('terms-modal')">✕</button>
+    <h2>Termini e Condizioni</h2>
+    <p><strong>Ultimo aggiornamento: Giugno 2026</strong></p>
+    
+    <h3>1. Accettazione dei Termini</h3>
+    <p>L'accesso e l'utilizzo di Press AI ("Servizio") è condizionato all'accettazione di questi Termini e Condizioni. Se non accetti questi termini, non utilizzare il Servizio.</p>
+    
+    <h3>2. Descrizione del Servizio</h3>
+    <p>Press AI è una piattaforma SaaS (Software as a Service) che fornisce strumenti automatizzati per la generazione di comunicati stampa professionali destinati a piccole e medie imprese italiane.</p>
+    
+    <h3>3. Registrazione e Account</h3>
+    <p>Per accedere al Servizio, devi registrare un account fornendo informazioni accurate e complete. Sei responsabile di mantenere la riservatezza delle tue credenziali di accesso e di tutte le attività che avvengono con il tuo account.</p>
+    
+    <h3>4. Piani di Abbonamento</h3>
+    <p>Press AI offre un periodo di prova gratuito di 7 giorni, seguito da piani a pagamento mensili (Starter, Professional, Business). La fatturazione avviene tramite Stripe e le fatture sono generate automaticamente al momento del pagamento.</p>
+    
+    <h3>5. Cancellazione e Rimborsi</h3>
+    <p>Puoi cancellare il tuo abbonamento in qualsiasi momento. I rimborsi non sono previsti per periodi già pagati. La cancellazione avrà effetto alla fine del ciclo di fatturazione corrente.</p>
+    
+    <h3>6. Limitazioni di Responsabilità</h3>
+    <p>Il Servizio è fornito "così com'è" senza garanzie di alcun tipo. Media Comunikiamo non è responsabile per danni indiretti, incidentali, speciali o consequenziali derivanti dall'utilizzo o dall'impossibilità di utilizzare il Servizio.</p>
+    
+    <h3>7. Contenuti Generati</h3>
+    <p>I comunicati stampa generati rimangono di proprietà dell'utente. Media Comunikiamo non reclama diritti di proprietà intellettuale sui contenuti creati.</p>
+    
+    <h3>8. Modifiche ai Termini</h3>
+    <p>Media Comunikiamo si riserva il diritto di modificare questi termini in qualsiasi momento. Le modifiche entreranno in vigore immediatamente dopo la pubblicazione.</p>
+    
+    <h3>9. Legge Applicabile</h3>
+    <p>Questi termini sono regolati dalla legge italiana. Per controversie, il foro competente è quello di Milano.</p>
+    
+    <p style="margin-top: 20px; text-align: center;">
+      <strong>Media Comunikiamo</strong><br>
+      P.IVA IT04489110967<br>
+      <a href="https://www.mediacomunikiamo.it" target="_blank">www.mediacomunikiamo.it</a>
+    </p>
+  </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div id="privacy-modal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+    <button class="modal-close" onclick="closeModal('privacy-modal')">✕</button>
+    <h2>Privacy Policy</h2>
+    <p><strong>Ultimo aggiornamento: Giugno 2026</strong></p>
+    
+    <h3>1. Titolare del Trattamento</h3>
+    <p><strong>Media Comunikiamo S.R.L.</strong><br>
+    P.IVA IT04489110967<br>
+    Email: info@mediacomunikiamo.it</p>
+    
+    <h3>2. Dati Personali Raccolti</h3>
+    <p>In conformità al Regolamento (UE) 2016/679 (GDPR), raccogliamo i seguenti dati personali:</p>
+    <ul style="margin-left: 20px;">
+      <li>Nome azienda</li>
+      <li>Email</li>
+      <li>Numero di telefono</li>
+      <li>Dati fiscali (P.IVA, Ragione Sociale, Indirizzo, Città, Provincia, CAP)</li>
+      <li>Dati di navigazione e utilizzo del Servizio</li>
+    </ul>
+    
+    <h3>3. Finalità del Trattamento</h3>
+    <p>I dati personali sono trattati per le seguenti finalità:</p>
+    <ul style="margin-left: 20px;">
+      <li>Erogazione del Servizio Press AI</li>
+      <li>Gestione della fatturazione e dei pagamenti tramite Stripe</li>
+      <li>Invio di comunicazioni relative al Servizio</li>
+      <li>Miglioramento e sviluppo del Servizio</li>
+      <li>Adempimento degli obblighi legali</li>
+    </ul>
+    
+    <h3>4. Base Giuridica</h3>
+    <p>Il trattamento si basa su: (a) esecuzione del contratto; (b) adempimento di obblighi legali; (c) interesse legittimo della società.</p>
+    
+    <h3>5. Destinatari dei Dati</h3>
+    <p>I dati possono essere condivisi con:</p>
+    <ul style="margin-left: 20px;">
+      <li><strong>Supabase</strong> - per l'archiviazione del database</li>
+      <li><strong>Stripe</strong> - per la gestione dei pagamenti</li>
+      <li><strong>Fatture in Cloud</strong> - per la generazione delle fatture</li>
+      <li><strong>Resend</strong> - per l'invio delle email</li>
+      <li><strong>Anthropic (Claude)</strong> - per la generazione dei comunicati stampa</li>
+    </ul>
+    
+    <h3>6. Conservazione dei Dati</h3>
+    <p>I dati personali sono conservati per tutta la durata dell'abbonamento e per 5 anni dopo la sua conclusione, per esigenze fiscali e legali.</p>
+    
+    <h3>7. Diritti dell'Interessato</h3>
+    <p>Hai il diritto di: accesso, rettifica, cancellazione, limitazione, portabilità, opposizione al trattamento. Per esercitare questi diritti, contatta: info@mediacomunikiamo.it</p>
+    
+    <h3>8. Reclami</h3>
+    <p>Puoi presentare un reclamo presso l'Autorità Garante per la Protezione dei Dati Personali (Garante Privacy): www.garanteprivacy.it</p>
+    
+    <p style="margin-top: 20px; text-align: center;">
+      <strong>Media Comunikiamo</strong><br>
+      P.IVA IT04489110967
+    </p>
+  </div>
+</div>
+
+<!-- Cookie Policy Modal -->
+<div id="cookies-modal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+    <button class="modal-close" onclick="closeModal('cookies-modal')">✕</button>
+    <h2>Cookie Policy</h2>
+    <p><strong>Ultimo aggiornamento: Giugno 2026</strong></p>
+    
+    <h3>1. Cosa sono i Cookie</h3>
+    <p>I cookie sono piccoli file di testo che i siti web memorizzano sul dispositivo dell'utente. Sono utilizzati per ricordare preferenze, tracciare l'utilizzo e migliorare l'esperienza utente.</p>
+    
+    <h3>2. Cookie Utilizzati da Press AI</h3>
+    
+    <h4>Cookie Tecnici (Necessari)</h4>
+    <ul style="margin-left: 20px;">
+      <li><strong>sb-session</strong> (Supabase) - Gestione della sessione autenticata</li>
+      <li><strong>sb-provider-token</strong> (Supabase) - Token di autenticazione</li>
+      <li>Cookie di sessione per il corretto funzionamento del Servizio</li>
+    </ul>
+    
+    <h4>Cookie Analytics (Facoltativo)</h4>
+    <ul style="margin-left: 20px;">
+      <li>Cookie di Google Analytics (se abilitati) per l'analisi dell'utilizzo</li>
+    </ul>
+    
+    <h3>3. Cookie di Terze Parti</h3>
+    <p>Press AI utilizza servizi di terze parti che possono installare cookie:</p>
+    <ul style="margin-left: 20px;">
+      <li><strong>Stripe</strong> - per la gestione sicura dei pagamenti</li>
+      <li><strong>Supabase</strong> - per l'autenticazione e il database</li>
+    </ul>
+    
+    <h3>4. Consenso ai Cookie</h3>
+    <p>L'utilizzo di Press AI implica l'accettazione dei cookie tecnici (necessari per il funzionamento). I cookie analytics e di profilazione richiedono il tuo consenso esplicito.</p>
+    
+    <h3>5. Come Gestire i Cookie</h3>
+    <p>Puoi gestire i cookie dalle impostazioni del tuo browser:</p>
+    <ul style="margin-left: 20px;">
+      <li>Chrome: Impostazioni → Privacy e sicurezza → Cookie</li>
+      <li>Firefox: Preferenze → Privacy → Cookie</li>
+      <li>Safari: Preferenze → Privacy</li>
+      <li>Edge: Impostazioni → Privacy</li>
+    </ul>
+    
+    <h3>6. Disabilitazione dei Cookie</h3>
+    <p>Se disabiliti i cookie tecnici, potresti non essere in grado di accedere al Servizio correttamente.</p>
+    
+    <p style="margin-top: 20px; text-align: center;">
+      <strong>Media Comunikiamo</strong><br>
+      P.IVA IT04489110967
+    </p>
   </div>
 </div>
 
@@ -1461,9 +1747,18 @@ async function doLogin() {
 async function doRegister() {
   const company = document.getElementById('reg-company').value.trim();
   const email = document.getElementById('reg-email').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
   const password = document.getElementById('reg-password').value;
+  
+  // Dati fiscali (facoltativi per trial)
+  const piva = document.getElementById('reg-piva').value.trim();
+  const ragione = document.getElementById('reg-ragione').value.trim();
+  const indirizzo = document.getElementById('reg-indirizzo').value.trim();
+  const city = document.getElementById('reg-city').value.trim();
+  const provincia = document.getElementById('reg-provincia').value.trim();
+  const cap = document.getElementById('reg-cap').value.trim();
 
-  if (!company || !email || !password) return showMsg('Compila tutti i campi.', 'error');
+  if (!company || !email || !phone || !password) return showMsg('Compila email, azienda, telefono e password.', 'error');
   if (password.length < 8) return showMsg('La password deve essere di almeno 8 caratteri.', 'error');
 
   showLoading(true);
@@ -1477,6 +1772,13 @@ async function doRegister() {
     options: { 
       data: { 
         company_name: company,
+        phone: phone,
+        p_iva: piva,
+        ragione_sociale: ragione,
+        indirizzo: indirizzo,
+        city: city,
+        provincia: provincia,
+        cap: cap,
         plan: 'trial',
         trial_end_date: trialEnd.toISOString(),
         credits_used: 0 
@@ -2013,6 +2315,24 @@ function showLoading(show) {
   if (show) overlay.classList.add('show');
   else overlay.classList.remove('show');
 }
+
+// Modal functions
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) modal.style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+  if (event.target.classList.contains('modal')) {
+    event.target.style.display = 'none';
+  }
+});
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
