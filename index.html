@@ -1196,8 +1196,8 @@
     <div id="login-msg"></div>
 
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('login')">Accedi</button>
-      <button class="tab-btn" onclick="switchTab('register')">Registrati</button>
+      <button class="tab-btn active" onclick="switchTab('login', this)">Accedi</button>
+      <button class="tab-btn" onclick="switchTab('register', this)">Registrati</button>
     </div>
 
     <!-- Login form -->
@@ -2299,9 +2299,9 @@ function showView(view) {
 
 }
 
-function switchTab(tab) {
+function switchTab(tab, el) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  if (el) el.classList.add('active');
   document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('form-register').style.display = tab === 'register' ? 'block' : 'none';
   document.getElementById('login-msg').innerHTML = '';
