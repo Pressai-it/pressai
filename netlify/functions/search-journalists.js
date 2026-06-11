@@ -88,15 +88,22 @@ exports.handler = async (event, context) => {
     }
 
     // Filtra i contatti in base al piano
+    // Trial: solo nome testata
+    // Starter (€149): nome + email
+    // Professional (€249): nome + email + telefono
+    // Business (€399): nome + email + telefono + rassegna stampa (gestita lato frontend)
+    const plan = profile.plan || 'trial';
+    const showEmail = ['starter', 'professional', 'business'].includes(plan);
+    const showPhone = ['professional', 'business'].includes(plan);
+
     const results = journalists.map(j => ({
       id: j.id,
       name: j.name,
       outlet: j.outlet,
       sector: j.sector,
-      // Email e telefono solo per piano Business
-      email: profile.plan === 'business' ? j.email : null,
-      phone: profile.plan === 'business' ? j.phone : null,
-      locked: profile.plan !== 'business'
+      email: showEmail ? j.email : null,
+      phone: showPhone ? j.phone : null,
+      locked: !showEmail
     }));
 
     return {
