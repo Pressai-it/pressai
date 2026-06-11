@@ -6,7 +6,7 @@
 
 const { createClient } = require('@supabase/supabase-js');
 
-const ADMIN_EMAIL = 'sandra@mediacomunikiamo.it';
+const ADMIN_EMAIL = 'sandramanzi@mediacomunikiamo.it';
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
