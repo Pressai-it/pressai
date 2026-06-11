@@ -2521,68 +2521,142 @@ async function incrementCreditsUsed() {
   }
 }
 
-function showMediaOutlets() {
+// =====================================================
+// RILEVAMENTO SETTORE DAL TESTO DEL COMUNICATO
+// =====================================================
+function detectSectorFromRelease(text) {
+  const lower = text.toLowerCase();
+  const sectorKeywords = {
+    'Cosmetica': ['cosmet', 'beauty', 'bellezza', 'skincare', 'make-up', 'makeup', 'profum', 'crema', 'siero', 'dermato', 'inci', 'balsam', 'trucco', 'fondotinta', 'rossetto', 'idratante', 'tonico'],
+    'Food': ['alimentar', 'food', 'gastronomia', 'enogastronom', 'vino', 'olio', 'pasta', 'formaggio', 'ristoran', 'dolce', 'panificio', 'bevanda', 'birra', 'caffè', 'biologico', 'bio ', 'horeca', 'gdo', 'ricetta', 'chef', 'cucina', 'gusto', 'prodotto tipico', 'dop', 'igp'],
+    'Manifatturiero': ['manifattur', 'fonderia', 'pressofusione', 'lavorazione metalli', 'meccanica', 'macchine utensili', 'automazione industriale', 'industria 4.0', 'subfornitura', 'verniciatura', 'siderurgia', 'metallurgia', 'stabilimento produttivo', 'impianto'],
+    'Marketing': ['marketing', 'comunicazione', 'pubblicità', 'agenzia', 'brand', 'campagna', 'digital marketing', 'seo', 'influencer', 'content', 'social media', 'pr ', 'relazioni pubbliche', 'media planning'],
+    'Packaging': ['packaging', 'imballaggio', 'confezionamento', 'etichetta', 'cartone', 'plastica riciclata', 'converting', 'flexo', 'sostenibilità imballaggio'],
+    'Retail': ['retail', 'gdo', 'distribuzione moderna', 'supermercato', 'punto vendita', 'negozio', 'e-commerce retail', 'shop'],
+    'Wellness': ['wellness', 'benessere', 'yoga', 'meditazione', 'naturopatia', 'fitoterapia', 'integratori', 'erboristeria', 'spa', 'centro estetico', 'terme', 'fitness', 'alimentazione sana', 'stile di vita'],
+    'Tech': ['tecnologia', 'software', 'digitale', 'startup', 'piattaforma', 'app', 'intelligenza artificiale', 'cloud', 'cybersecurity', 'saas', 'e-commerce', 'fintech', 'ict', 'digital transformation', 'data', 'algoritmo', 'intelligenza artificiale'],
+    'Moda': ['moda', 'fashion', 'abbigliamento', 'tessile', 'luxury', 'lusso', 'sartoria', 'calzatur', 'accessori moda', 'collezione', 'sfilata', 'stilista', 'brand moda'],
+    'Arredamento': ['arredamento', 'design', 'mobili', 'interior', 'decorazione', 'illuminazione', 'cucina componibile', 'contract', 'architettura', 'abitare'],
+    'Sostenibilità': ['sostenibil', 'green', 'rinnovabile', 'ambiente', 'carbonio', 'riciclo', 'economia circolare', 'emissioni', 'esg', 'energia rinnovabile', 'efficienza energetica', 'decarbonizzazione'],
+    'Logistica': ['logistica', 'supply chain', 'trasporto', 'spedizione', 'magazzino', 'distribuzione', 'corriere', 'freight', 'autotrasporto', 'filiera'],
+    'Hospitality': ['hotel', 'albergo', 'turismo', 'ospitalità', 'hospitality', 'resort', 'b&b', 'agriturismo', 'ristorazione', 'viaggi', 'destinazione turistica'],
+    'Farmaceutico': ['farmac', 'medicinale', 'farmacia', 'nutraceutico', 'dispositivo medico', 'biotecnolog', 'clinico', 'terapia', 'paziente', 'salute', 'healthcare', 'sanità'],
+    'Automotive': ['auto', 'veicolo', 'motore', 'automotive', 'concessionaria', 'flotta', 'mobilità', 'elettrico', 'ibrido', 'ricambi', 'officina', 'fleet'],
+    'Pet Care': ['animali', 'pet', 'cane', 'gatto', 'veterinar', 'zootecnia', 'mangime', 'petfood', 'quattrozampe', 'animale domestico'],
+  };
+
+  let bestSector = null;
+  let bestScore = 0;
+  for (const [sector, keywords] of Object.entries(sectorKeywords)) {
+    let score = 0;
+    for (const kw of keywords) {
+      if (lower.includes(kw)) score++;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestSector = sector;
+    }
+  }
+  return bestSector || 'Manifatturiero'; // fallback generico
+}
+
+// =====================================================
+// MOSTRA TESTATE FILTRATE PER SETTORE
+// =====================================================
+async function showMediaOutlets() {
   const section = document.getElementById('outlets-section');
   const list = document.getElementById('outlets-list');
   const trialNotice = document.getElementById('outlets-trial-notice');
-  
+
   section.style.display = 'block';
-  
-  // TRIAL: Solo nomi testate, email nascoste
+  list.innerHTML = '<div style="padding:16px;color:rgba(255,255,255,0.6);">⏳ Ricerca testate pertinenti...</div>';
+
+  // Rileva settore dall'ultimo comunicato generato
+  const lastRelease = chatHistory.filter(m => m.role === 'assistant').slice(-1)[0]?.content || '';
+  const detectedSector = detectSectorFromRelease(lastRelease);
+
+  // Recupera token sessione
+  const { data: { session } } = await sb.auth.getSession();
+  const authToken = session?.access_token;
+
+  let outlets = [];
+
+  try {
+    const res = await fetch('/.netlify/functions/search-journalists', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sector: detectedSector, authToken })
+    });
+    const data = await res.json();
+    outlets = data.results || [];
+  } catch (e) {
+    console.error('Errore caricamento testate:', e);
+  }
+
+  // Fallback su array statico se Supabase è vuoto
+  if (!outlets || outlets.length === 0) {
+    outlets = MEDIA_OUTLETS.map(o => ({ outlet: o.name, email: o.email, phone: o.phone, locked: false }));
+  }
+
+  // Header settore rilevato
+  const sectorHeader = `<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:12px;">📂 Settore rilevato: <strong style="color:#a78bfa">${detectedSector}</strong> — ${outlets.length} testate trovate</div>`;
+
+  // TRIAL: solo nomi, email bloccate
   if (isTrialActive) {
     trialNotice.style.display = 'block';
     trialNotice.textContent = '🔒 Stai usando la prova gratuita. Acquista un piano per accedere ai contatti delle redazioni.';
-    list.innerHTML = MEDIA_OUTLETS.map(outlet => `
+    list.innerHTML = sectorHeader + outlets.map(o => `
       <div class="outlet-item">
-        <div class="outlet-name">📰 ${outlet.name}</div>
+        <div class="outlet-name">📰 ${o.outlet}</div>
         <div class="outlet-email hidden">🔒 Email disponibile nei piani a pagamento</div>
       </div>
     `).join('');
-  } 
-  // STARTER: Nomi + Email
-  else if (currentPlan === 'starter') {
+
+  // STARTER: nomi + email
+  } else if (currentPlan === 'starter') {
     trialNotice.style.display = 'none';
-    list.innerHTML = MEDIA_OUTLETS.map(outlet => `
+    list.innerHTML = sectorHeader + outlets.map(o => `
       <div class="outlet-item">
-        <div class="outlet-name">📰 ${outlet.name}</div>
-        <div class="outlet-email">${outlet.email}</div>
+        <div class="outlet-name">📰 ${o.outlet}</div>
+        <div class="outlet-email">${o.email ? '✉️ ' + o.email : '<span style="opacity:0.4">Email non disponibile</span>'}</div>
       </div>
     `).join('');
-  }
-  // PROFESSIONAL: Nomi + Email + Telefoni
-  else if (currentPlan === 'professional') {
+
+  // PROFESSIONAL: nomi + email + telefono
+  } else if (currentPlan === 'professional') {
     trialNotice.style.display = 'none';
-    list.innerHTML = MEDIA_OUTLETS.map(outlet => `
+    list.innerHTML = sectorHeader + outlets.map(o => `
       <div class="outlet-item">
-        <div class="outlet-name">📰 ${outlet.name}</div>
+        <div class="outlet-name">📰 ${o.outlet}</div>
         <div class="outlet-contact">
-          <div class="outlet-email">✉️ ${outlet.email}</div>
-          <div class="outlet-phone">📞 ${outlet.phone}</div>
+          <div class="outlet-email">${o.email ? '✉️ ' + o.email : ''}</div>
+          <div class="outlet-phone">${o.phone ? '📞 ' + o.phone : ''}</div>
         </div>
       </div>
     `).join('');
-  }
-  // BUSINESS: Nomi + Email + Telefoni + Rassegna Stampa
-  else if (currentPlan === 'business') {
+
+  // BUSINESS: nomi + email + telefono + rassegna stampa
+  } else if (currentPlan === 'business') {
     trialNotice.style.display = 'none';
-    list.innerHTML = MEDIA_OUTLETS.map(outlet => `
+    list.innerHTML = sectorHeader + outlets.map(o => `
       <div class="outlet-item">
-        <div class="outlet-name">📰 ${outlet.name}</div>
+        <div class="outlet-name">📰 ${o.outlet}</div>
         <div class="outlet-contact">
-          <div class="outlet-email">✉️ ${outlet.email}</div>
-          <div class="outlet-phone">📞 ${outlet.phone}</div>
+          <div class="outlet-email">${o.email ? '✉️ ' + o.email : ''}</div>
+          <div class="outlet-phone">${o.phone ? '📞 ' + o.phone : ''}</div>
         </div>
       </div>
     `).join('') + `
       <div class="press-monitoring">
-        <h4>📊 Rassegna Stampa Automatica</h4>
-        <p>Con il piano Business, riceverai una rassegna stampa automatica ogni volta che il tuo comunicato viene pubblicato.</p>
+        <h4>📊 Rassegna Stampa — Piano Business</h4>
+        <p>Monitoriamo automaticamente le pubblicazioni generate dai tuoi comunicati stampa: ogni volta che una testata pubblica un articolo basato su un comunicato che hai inviato tramite Press AI, lo tracci qui.</p>
         <ul>
-          <li>🔍 Monitoraggio quotidiano delle pubblicazioni</li>
-          <li>📈 Report di copertura mediatica</li>
-          <li>📰 Articoli con link diretti</li>
-          <li>📧 Notifiche via email in tempo reale</li>
+          <li>🔍 Monitoraggio quotidiano delle testate a cui hai inviato</li>
+          <li>📰 Raccolta degli articoli pubblicati con link diretto</li>
+          <li>📈 Report mensile di copertura mediatica</li>
+          <li>📧 Notifica via email ad ogni nuova pubblicazione rilevata</li>
         </ul>
+        <p style="font-size:12px;opacity:0.6;margin-top:8px;">La rassegna stampa è attiva sui comunicati inviati tramite Press AI. Le pubblicazioni vengono rilevate entro 24-48 ore dall'uscita.</p>
       </div>
     `;
   }
