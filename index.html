@@ -1224,8 +1224,16 @@
         <input type="email" id="reg-email" placeholder="tua@email.it">
       </div>
       <div class="form-group">
-        <label>Telefono</label>
+        <label>Telefono <span style="color:#b8860b;">*</span></label>
         <input type="tel" id="reg-phone" placeholder="+39 3XX XXX XXXX">
+      </div>
+      <div class="form-group">
+        <label>Sito web aziendale</label>
+        <input type="url" id="reg-website" placeholder="https://www.tuaazienda.it">
+      </div>
+      <div class="form-group">
+        <label>Referente ufficio stampa</label>
+        <input type="text" id="reg-press-contact" placeholder="Nome Cognome (es. Mario Rossi, Ufficio Stampa)">
       </div>
       <div class="form-group">
         <label>Password</label>
@@ -1352,12 +1360,15 @@
     <h3>2. Dati Personali Raccolti</h3>
     <p>In conformità al Regolamento (UE) 2016/679 (GDPR), raccogliamo i seguenti dati personali:</p>
     <ul style="margin-left: 20px;">
-      <li>Nome azienda</li>
+      <li>Nome azienda e ragione sociale</li>
       <li>Email</li>
       <li>Numero di telefono</li>
-      <li>Dati fiscali (P.IVA, Ragione Sociale, Indirizzo, Città, Provincia, CAP)</li>
+      <li>Sito web aziendale</li>
+      <li>Nome e qualifica del referente ufficio stampa</li>
+      <li><strong>Dati fiscali</strong>: Partita IVA, Ragione Sociale legale, Indirizzo sede legale, Città, Provincia, CAP — raccolti ai fini dell'emissione di fatture elettroniche XML tramite il Sistema di Interscambio (SDI), in adempimento agli obblighi fiscali italiani (D.Lgs. 127/2015 e successive modifiche)</li>
       <li>Dati di navigazione e utilizzo del Servizio</li>
     </ul>
+    <p style="margin-top:8px; font-size:13px; color:#555;">I dati fiscali sono facoltativi durante il periodo di prova gratuita e diventano necessari al momento dell'attivazione di un piano a pagamento per l'emissione della fattura elettronica obbligatoria.</p>
     
     <h3>3. Finalità del Trattamento</h3>
     <p>I dati personali sono trattati per le seguenti finalità:</p>
@@ -1452,6 +1463,43 @@
 </div>
 
 <!-- ===== APP PAGE ===== -->
+  <!-- OVERLAY TRIAL SCADUTO -->
+  <div id="trial-expired-overlay" style="display:none; position:fixed; inset:0; background:rgba(26,58,92,0.97); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:24px;">
+    <div style="max-width:680px; width:100%; text-align:center;">
+      <div style="font-size:48px; margin-bottom:16px;">⏰</div>
+      <h2 style="color:#f7f3ec; font-family:'Playfair Display',serif; font-size:28px; margin-bottom:12px;">La tua prova gratuita è scaduta</h2>
+      <p style="color:rgba(255,255,255,0.7); font-size:15px; margin-bottom:32px;">Scegli il piano più adatto alla tua azienda per continuare a generare comunicati stampa professionali.</p>
+      <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+        <a href="https://buy.stripe.com/cNi7sK2UOc9HaHZgqt1ZS08" target="_blank" style="background:#1a3a5c; border:2px solid #b8860b; border-radius:12px; padding:24px 20px; min-width:180px; text-decoration:none; display:flex; flex-direction:column; align-items:center; gap:8px; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+          <span style="color:#c9a84c; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Starter</span>
+          <span style="color:#f7f3ec; font-size:32px; font-weight:700; font-family:'Playfair Display',serif;">€149</span>
+          <span style="color:rgba(255,255,255,0.5); font-size:12px;">al mese</span>
+          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">3 comunicati/mese</span>
+          <span style="color:rgba(255,255,255,0.7); font-size:13px;">Email giornalisti inclusa</span>
+          <span style="background:#b8860b; color:#fff; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; margin-top:12px;">Acquista →</span>
+        </a>
+        <a href="https://buy.stripe.com/8x2dR8eDw2z76rJ3DH1ZS07" target="_blank" style="background:#1a3a5c; border:2px solid #c9a84c; border-radius:12px; padding:24px 20px; min-width:180px; text-decoration:none; display:flex; flex-direction:column; align-items:center; gap:8px; position:relative; transform:scale(1.05); box-shadow:0 8px 32px rgba(184,134,11,0.3);" onmouseover="this.style.transform='scale(1.05) translateY(-4px)'" onmouseout="this.style.transform='scale(1.05)'">
+          <span style="position:absolute; top:-12px; background:#c9a84c; color:#1a3a5c; font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:1px;">Più scelto</span>
+          <span style="color:#c9a84c; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Professional</span>
+          <span style="color:#f7f3ec; font-size:32px; font-weight:700; font-family:'Playfair Display',serif;">€249</span>
+          <span style="color:rgba(255,255,255,0.5); font-size:12px;">al mese</span>
+          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">10 comunicati/mese</span>
+          <span style="color:rgba(255,255,255,0.7); font-size:13px;">Email + telefono giornalisti</span>
+          <span style="background:#b8860b; color:#fff; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; margin-top:12px;">Acquista →</span>
+        </a>
+        <a href="https://buy.stripe.com/4gM14mangc9H3fx2zD1ZS06" target="_blank" style="background:#1a3a5c; border:2px solid #b8860b; border-radius:12px; padding:24px 20px; min-width:180px; text-decoration:none; display:flex; flex-direction:column; align-items:center; gap:8px; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+          <span style="color:#c9a84c; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Business</span>
+          <span style="color:#f7f3ec; font-size:32px; font-weight:700; font-family:'Playfair Display',serif;">€399</span>
+          <span style="color:rgba(255,255,255,0.5); font-size:12px;">al mese</span>
+          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">Comunicati illimitati</span>
+          <span style="color:rgba(255,255,255,0.7); font-size:13px;">Email + tel + rassegna stampa</span>
+          <span style="background:#b8860b; color:#fff; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; margin-top:12px;">Acquista →</span>
+        </a>
+      </div>
+      <p style="color:rgba(255,255,255,0.4); font-size:12px; margin-top:24px;">Dopo l'acquisto riceverai un'email di conferma. Il tuo account verrà attivato automaticamente.</p>
+    </div>
+  </div>
+
 <div class="page" id="page-app">
 
   <!-- Trial banner (shown only during trial) -->
@@ -1460,7 +1508,7 @@
       <h4>🎁 Prova gratuita attiva</h4>
       <p id="trial-countdown">Ti restano 7 giorni e 2 comunicati gratuiti</p>
     </div>
-    <a href="#" class="btn-upgrade" onclick="showUpgradePlans(); return false;">Acquista ora</a>
+    <a href="#" class="btn-upgrade" onclick="document.getElementById('plans-banner').scrollIntoView({behavior:'smooth'}); return false;">Scegli il piano →</a>
   </div>
 
   <!-- Header -->
@@ -1501,6 +1549,14 @@
           <div class="credits-sub" id="credits-sub">questo mese</div>
         </div>
       </div>
+
+      <!-- Admin section (solo per admin) -->
+      <div class="sidebar-section" id="admin-section" style="display:none;">
+        <div class="sidebar-title" style="color:#c0392b;">⚙️ Admin</div>
+        <button class="nav-item" onclick="showView('admin')" style="color:#c0392b;">
+          <span class="icon">👥</span> Gestione utenti
+        </button>
+      </div>
     </aside>
 
     <!-- Main content -->
@@ -1540,6 +1596,43 @@
             <p>Nessun comunicato ancora. Crea il tuo primo!</p>
           </div>
         </div>
+
+        <!-- BANNER PIANI FISSO -->
+        <div id="plans-banner" style="margin-top:32px; background:linear-gradient(135deg,#1a3a5c 0%,#2d5a8e 100%); border-radius:16px; padding:28px 24px;">
+          <div style="text-align:center; margin-bottom:20px;">
+            <h3 style="color:#f7f3ec; font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px;" id="plans-banner-title">Scegli il tuo piano</h3>
+            <p style="color:rgba(255,255,255,0.6); font-size:13px;" id="plans-banner-subtitle">Accedi a tutti i comunicati e al database di 282 testate italiane</p>
+          </div>
+          <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+            <a href="https://buy.stripe.com/cNi7sK2UOc9HaHZgqt1ZS08" target="_blank" id="plan-card-starter" style="background:rgba(255,255,255,0.07); border:1px solid rgba(184,134,11,0.4); border-radius:10px; padding:18px 16px; min-width:160px; text-decoration:none; display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; max-width:200px;">
+              <span style="color:#c9a84c; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Starter</span>
+              <span style="color:#f7f3ec; font-size:26px; font-weight:700; font-family:'Playfair Display',serif;">€149</span>
+              <span style="color:rgba(255,255,255,0.4); font-size:11px; margin-bottom:6px;">al mese</span>
+              <span style="color:rgba(255,255,255,0.7); font-size:12px;">3 comunicati/mese</span>
+              <span style="color:rgba(255,255,255,0.7); font-size:12px;">Email giornalisti</span>
+              <span style="background:#b8860b; color:#fff; padding:8px 18px; border-radius:5px; font-size:12px; font-weight:600; margin-top:10px; display:block;">Attiva →</span>
+            </a>
+            <a href="https://buy.stripe.com/8x2dR8eDw2z76rJ3DH1ZS07" target="_blank" id="plan-card-professional" style="background:rgba(184,134,11,0.12); border:2px solid #c9a84c; border-radius:10px; padding:18px 16px; min-width:160px; text-decoration:none; display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; max-width:200px; position:relative;">
+              <span style="position:absolute; top:-10px; background:#c9a84c; color:#1a3a5c; font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase;">Più scelto</span>
+              <span style="color:#c9a84c; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Professional</span>
+              <span style="color:#f7f3ec; font-size:26px; font-weight:700; font-family:'Playfair Display',serif;">€249</span>
+              <span style="color:rgba(255,255,255,0.4); font-size:11px; margin-bottom:6px;">al mese</span>
+              <span style="color:rgba(255,255,255,0.7); font-size:12px;">10 comunicati/mese</span>
+              <span style="color:rgba(255,255,255,0.7); font-size:12px;">Email + telefono</span>
+              <span style="background:#b8860b; color:#fff; padding:8px 18px; border-radius:5px; font-size:12px; font-weight:600; margin-top:10px; display:block;">Attiva →</span>
+            </a>
+            <a href="https://buy.stripe.com/4gM14mangc9H3fx2zD1ZS06" target="_blank" id="plan-card-business" style="background:rgba(255,255,255,0.07); border:1px solid rgba(184,134,11,0.4); border-radius:10px; padding:18px 16px; min-width:160px; text-decoration:none; display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; max-width:200px;">
+              <span style="color:#c9a84c; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Business</span>
+              <span style="color:#f7f3ec; font-size:26px; font-weight:700; font-family:'Playfair Display',serif;">€399</span>
+              <span style="color:rgba(255,255,255,0.4); font-size:11px; margin-bottom:6px;">al mese</span>
+              <span style="color:rgba(255,255,255,0.7); font-size:12px;">Illimitati</span>
+              <span style="color:rgba(255,255,255,0.7); font-size:12px;">Email + tel + rassegna</span>
+              <span style="background:#b8860b; color:#fff; padding:8px 18px; border-radius:5px; font-size:12px; font-weight:600; margin-top:10px; display:block;">Attiva →</span>
+            </a>
+          </div>
+          <p style="color:rgba(255,255,255,0.35); font-size:11px; text-align:center; margin-top:16px;">Pagamento sicuro tramite Stripe · Fattura elettronica automatica · Disdici quando vuoi</p>
+        </div>
+
       </div>
 
       <!-- GENERATOR VIEW -->
@@ -1621,6 +1714,25 @@
         </div>
       </div>
 
+      <!-- ADMIN VIEW -->
+      <div class="view" id="view-admin">
+        <div class="generator-header">
+          <h2>⚙️ Pannello Admin</h2>
+          <p>Gestione utenti Press AI — accesso riservato.</p>
+        </div>
+        <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+          <input type="text" id="admin-search" placeholder="Cerca per email o azienda..." style="padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; flex:1; min-width:200px;" oninput="adminFilterUsers()">
+          <button onclick="adminLoadUsers()" style="background:var(--navy); color:white; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; font-family:inherit; font-size:14px;">🔄 Aggiorna</button>
+        </div>
+        <div id="admin-users-list" style="display:flex; flex-direction:column; gap:12px;">
+          <p style="color:var(--text-muted);">Caricamento utenti...</p>
+        </div>
+        <div id="admin-audit-log" style="margin-top:32px;">
+          <h3 style="font-size:15px; color:var(--navy); margin-bottom:12px;">📋 Audit Log (ultime azioni admin)</h3>
+          <div id="audit-log-list" style="font-size:12px; color:var(--text-muted); font-family:monospace; background:#f5f5f5; padding:12px; border-radius:8px; max-height:200px; overflow-y:auto;"></div>
+        </div>
+      </div>
+
     </main>
   </div>
 </div>
@@ -1670,51 +1782,81 @@ let trialEndDate = null;
 let isTrialActive = false;
 
 // ===== SYSTEM PROMPT =====
-const SYSTEM_PROMPT = `Sei il motore editoriale di Press AI. Scrivi comunicati stampa come li scriverebbe un GIORNALISTA PROFESSIONISTA della cronaca economica italiana - mai come un marketer o una startup.
+function buildSystemPrompt() {
+  const meta = currentUser?.user_metadata || {};
+  const company = meta.company_name || 'L\'azienda';
+  const pressContact = meta.press_contact || company;
+  const phone = meta.phone || '';
+  const email = currentUser?.email || '';
+  const website = meta.website || '';
+
+  const contactsBlock = `
+BLOCCO CONTATTI STAMPA (obbligatorio in fondo ad ogni comunicato):
+---
+Per informazioni:
+${pressContact}
+${phone ? `Tel: ${phone}` : ''}
+${email ? `Email: ${email}` : ''}
+${website ? `Web: ${website}` : ''}
+###
+---`;
+
+  return `Sei il motore editoriale di Press AI. Scrivi comunicati stampa come li scriverebbe un GIORNALISTA PROFESSIONISTA della cronaca economica italiana - mai come un marketer o una startup.
 
 FASI OPERATIVE:
-1. FILTRO NOTIZIA: verifica che ci sia una notizia reale (non promozionale)
-2. INTERVISTA: fai domande per estrarre dettagli concreti, verificabili, con dati
-3. ANGOLI EDITORIALI: proponi 3 angoli giornalistici. L'utente ne sceglie UNO.
+1. FILTRO NOTIZIA: verifica che ci sia una notizia reale (non promozionale). Se non c'è una notizia vera, blocca e fai domande per trovarne una.
+2. INTERVISTA: fai domande per estrarre dettagli concreti, verificabili, con dati precisi (fatturato, n. dipendenti, date, %)
+3. ANGOLI EDITORIALI: proponi 3 angoli giornalistici distinti. L'utente ne sceglie UNO.
 4. REDAZIONE: scrivi SOLO il comunicato dell'angolo scelto
 
+STRUTTURA OBBLIGATORIA DEL COMUNICATO:
+- Testata mittente + ruolo redattore
+- COMUNICATO STAMPA (in grassetto)
+- TITOLO (in grassetto, max 12 parole, notizia non claim)
+- Occhiello descrittivo in corsivo
+- Dateline: CITTÀ (PROV), giorno mese anno –
+- Lead: chi, cosa, quando, dove, perché (1 paragrafo)
+- Sviluppo: 3-4 paragrafi con dati concreti
+- Almeno 1 citazione diretta sobria della fonte
+- Contesto settoriale con dato esterno verificabile (fonte terza: Istat, Osservatorio Politecnico, Eurostat, ecc.)
+- Boilerplate "Chi è [Azienda]" (2-3 righe)
+${contactsBlock}
+
 TONO GIORNALISTICO OBBLIGATORIO:
-- Scrivi come Il Sole 24 Ore, non come TechCrunch
+- Scrivi come Il Sole 24 Ore o ANSA, non come TechCrunch
 - Stile: cronaca economica italiana, neutrale, fattuale
-- Nessun entusiasmo artificiale
-- Nessuna retorica da pitch
-- Come se dovesse uscire su ANSA domani mattina
+- Nessun entusiasmo artificiale, nessuna retorica da pitch
+- I claim non verificabili ("prima azienda italiana a...") vanno attribuiti esplicitamente alla fonte: "secondo la founder..." oppure eliminati
 
 PAROLE ASSOLUTAMENTE VIETATE:
 ❌ rivoluziona/rivoluzionario
-❌ democratizza/democratizzare  
+❌ democratizza/democratizzare
 ❌ scalabile/scalabilità
-❌ innovazione consolidata
-❌ sfida vinta
-❌ game changer
-❌ disruptivo
-❌ ecosistema digitale
-❌ next-level
-❌ cutting-edge
-❌ breakthrough
+❌ game changer / disruptivo / breakthrough
+❌ innovazione consolidata / sfida vinta
+❌ ecosistema digitale / next-level / cutting-edge
+❌ Finalmente / Oggi più che mai / Siamo orgogliosi
 
 OBBLIGATORIO IN OGNI COMUNICATO:
-✅ Dati concreti: fatturati, numeri dipendenti, date precise, % crescita
-✅ Contesto settoriale verificabile
+✅ Dati concreti: fatturati, numeri, date precise, percentuali
+✅ Contesto settoriale con fonte terza verificabile
 ✅ Citazioni dirette sobrie (mai autocelebrative)
-✅ Informazioni di servizio concrete
+✅ Boilerplate aziendale
+✅ Blocco contatti stampa in fondo
+✅ Simbolo ### di chiusura
 
 DOPO IL COMUNICATO:
 - NON aggiungere auguri ("Buona fortuna", "In bocca al lupo")
 - NON usare emoji 🚀
-- Termina con il comunicato, punto
+- Termina SEMPRE con il blocco contatti e ###
 
 REGOLA ANTI-FUFFA:
 Se il comunicato suona come una brochure aziendale → RISCRIVI in stile cronaca
 Se useresti un'esclamazione → TOGLILA
 Se una frase inizia con "Finalmente" o "Oggi più che mai" → CANCELLALA
 
-Scrivi come scrivono i giornalisti professionisti italiani che hanno 20 anni di esperienza in redazioni economiche.`;
+Scrivi come scrivono i giornalisti professionisti italiani con 20 anni di esperienza in redazioni economiche.`;
+}
 
 // ===== AUTH =====
 async function init() {
@@ -1722,6 +1864,14 @@ async function init() {
   if (session) {
     currentUser = session.user;
     await loadUserPlan();
+    // Blocca accesso se trial già completato e non ha piano pagato
+    const meta = currentUser.user_metadata || {};
+    if (meta.trial_completed && (!meta.plan || meta.plan === 'trial')) {
+      showApp();
+      document.getElementById('trial-expired-overlay').style.display = 'flex';
+      document.querySelectorAll('.nav-item, .btn-new, #btn-new-dashboard').forEach(el => el.disabled = true);
+      return;
+    }
     checkTrialStatus();
     showApp();
   }
@@ -1739,6 +1889,14 @@ async function doLogin() {
   if (error) return showMsg('Credenziali non valide. Controlla email e password.', 'error');
   currentUser = data.user;
   await loadUserPlan();
+  // Blocca accesso se trial completato senza piano pagato
+  const meta = currentUser.user_metadata || {};
+  if (meta.trial_completed && (!meta.plan || meta.plan === 'trial')) {
+    showApp();
+    document.getElementById('trial-expired-overlay').style.display = 'flex';
+    document.querySelectorAll('.nav-item, .btn-new, #btn-new-dashboard').forEach(el => el.disabled = true);
+    return;
+  }
   checkTrialStatus();
   showApp();
 }
@@ -1747,6 +1905,8 @@ async function doRegister() {
   const company = document.getElementById('reg-company').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const phone = document.getElementById('reg-phone').value.trim();
+  const website = document.getElementById('reg-website').value.trim();
+  const pressContact = document.getElementById('reg-press-contact').value.trim();
   const password = document.getElementById('reg-password').value;
   
   // Dati fiscali (facoltativi per trial)
@@ -1772,6 +1932,8 @@ async function doRegister() {
       data: { 
         company_name: company,
         phone: phone,
+        website: website,
+        press_contact: pressContact || company,
         p_iva: piva,
         ragione_sociale: ragione,
         indirizzo: indirizzo,
@@ -1870,44 +2032,231 @@ function checkTrialStatus() {
   }
 }
 
-function showTrialExpiredMessage() {
-  alert('La tua prova gratuita è scaduta. Acquista un piano per continuare a usare Press AI.');
+async function showTrialExpiredMessage() {
+  // Imposta flag trial_completed in Supabase per bloccare accesso anche con altra email
+  try {
+    await sb.auth.updateUser({ data: { trial_completed: true } });
+  } catch(e) { console.warn('Flag trial_completed:', e); }
+  // Mostra overlay bloccante
+  document.getElementById('trial-expired-overlay').style.display = 'flex';
+  // Disabilita tutti i pulsanti azione
+  document.querySelectorAll('.nav-item, .btn-new, #btn-new-dashboard').forEach(el => el.disabled = true);
+}
+
 }
 
 function showUpgradePlans() {
-  const plans = `
-Scegli il tuo piano:
-
-STARTER - €149/mese
-- 3 comunicati al mese
-Link: ${STRIPE_LINKS.starter}
-
-PROFESSIONAL - €249/mese
-- 10 comunicati al mese
-Link: ${STRIPE_LINKS.professional}
-
-BUSINESS - €399/mese
-- Comunicati illimitati
-Link: ${STRIPE_LINKS.business}
-  `;
-  alert(plans);
+  // Ora porta direttamente al banner piani nella dashboard
+  showView('dashboard');
+  setTimeout(() => {
+    document.getElementById('plans-banner')?.scrollIntoView({ behavior: 'smooth' });
+  }, 100);
 }
+
+// ===== PIANI BANNER: aggiorna in base al piano attivo =====
+function updatePlansBanner() {
+  const banner = document.getElementById('plans-banner');
+  if (!banner) return;
+  const title = document.getElementById('plans-banner-title');
+  const subtitle = document.getElementById('plans-banner-subtitle');
+  if (!currentUser) return;
+  const meta = currentUser.user_metadata || {};
+  const plan = meta.plan || 'trial';
+
+  if (plan === 'trial') {
+    if (title) title.textContent = 'Scegli il tuo piano';
+    if (subtitle) subtitle.textContent = 'La prova gratuita include 2 comunicati. Attiva un piano per continuare.';
+    // Evidenzia tutti i piani
+    ['starter','professional','business'].forEach(p => {
+      const card = document.getElementById('plan-card-' + p);
+      if (card) card.style.opacity = '1';
+    });
+  } else {
+    // Utente ha già un piano attivo
+    if (title) title.textContent = 'Il tuo piano: ' + plan.charAt(0).toUpperCase() + plan.slice(1);
+    if (subtitle) subtitle.textContent = 'Vuoi passare a un piano superiore? Clicca sul piano desiderato.';
+    // Opacizza il piano corrente, evidenzia quelli superiori
+    const order = ['starter','professional','business'];
+    const idx = order.indexOf(plan);
+    order.forEach((p, i) => {
+      const card = document.getElementById('plan-card-' + p);
+      if (!card) return;
+      if (i <= idx) {
+        card.style.opacity = '0.4';
+        card.style.pointerEvents = 'none';
+        const btn = card.querySelector('span[style*="background:#b8860b"]');
+        if (btn) btn.textContent = i === idx ? '✓ Piano attivo' : 'Piano inferiore';
+      } else {
+        card.style.opacity = '1';
+        card.style.pointerEvents = 'auto';
+      }
+    });
+  }
+}
+
+// ===== ADMIN =====
+const ADMIN_EMAIL = 'sandra@mediacomunikiamo.it';
+let adminUsers = [];
+let auditLog = JSON.parse(localStorage.getItem('pressai_audit_log') || '[]');
+
+function isAdmin() {
+  return currentUser?.email === ADMIN_EMAIL;
+}
+
+function addAuditEntry(action, targetEmail) {
+  const entry = {
+    ts: new Date().toISOString(),
+    admin: currentUser.email,
+    action,
+    target: targetEmail
+  };
+  auditLog.unshift(entry);
+  if (auditLog.length > 200) auditLog = auditLog.slice(0, 200);
+  localStorage.setItem('pressai_audit_log', JSON.stringify(auditLog));
+  renderAuditLog();
+}
+
+function renderAuditLog() {
+  const el = document.getElementById('audit-log-list');
+  if (!el) return;
+  if (auditLog.length === 0) {
+    el.textContent = 'Nessuna azione registrata.';
+    return;
+  }
+  el.innerHTML = auditLog.map(e =>
+    `<div>${e.ts.replace('T',' ').slice(0,19)} | ${e.action} | ${e.target}</div>`
+  ).join('');
+}
+
+async function adminLoadUsers() {
+  if (!isAdmin()) return;
+  addAuditEntry('LOAD_USERS_LIST', '—');
+  const listEl = document.getElementById('admin-users-list');
+  listEl.innerHTML = '<p style="color:var(--text-muted)">Caricamento...</p>';
+
+  try {
+    // Carica utenti tramite Supabase (richiede service key — usiamo la funzione netlify)
+    const res = await fetch('/.netlify/functions/admin-users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'list_users', adminEmail: currentUser.email })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    adminUsers = data.users || [];
+    renderAdminUsers(adminUsers);
+  } catch(e) {
+    listEl.innerHTML = `<p style="color:var(--error)">Errore: ${e.message}</p>`;
+  }
+}
+
+function adminFilterUsers() {
+  const q = document.getElementById('admin-search').value.toLowerCase();
+  const filtered = adminUsers.filter(u =>
+    u.email?.toLowerCase().includes(q) ||
+    u.user_metadata?.company_name?.toLowerCase().includes(q)
+  );
+  renderAdminUsers(filtered);
+}
+
+function renderAdminUsers(users) {
+  const listEl = document.getElementById('admin-users-list');
+  if (!users.length) {
+    listEl.innerHTML = '<p style="color:var(--text-muted)">Nessun utente trovato.</p>';
+    return;
+  }
+  listEl.innerHTML = users.map(u => {
+    const meta = u.user_metadata || {};
+    const plan = meta.plan || 'trial';
+    const trialCompleted = meta.trial_completed ? '⛔ Trial completato' : '';
+    const planColor = plan === 'trial' ? '#888' : plan === 'business' ? '#b8860b' : '#1a3a5c';
+    return `
+    <div style="background:white; border:1px solid var(--border); border-radius:10px; padding:16px 18px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+      <div>
+        <div style="font-weight:600; font-size:14px;">${meta.company_name || '—'}</div>
+        <div style="font-size:13px; color:var(--text-muted);">${u.email}</div>
+        <div style="font-size:12px; margin-top:4px;">
+          <span style="background:${planColor}; color:white; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">${plan.toUpperCase()}</span>
+          ${trialCompleted ? `<span style="color:var(--error); font-size:11px; margin-left:8px;">${trialCompleted}</span>` : ''}
+          <span style="color:var(--text-muted); margin-left:8px;">Crediti usati: ${meta.credits_used || 0}</span>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button onclick="adminImpersonate('${u.id}','${u.email}')" style="background:var(--navy); color:white; border:none; padding:7px 14px; border-radius:6px; cursor:pointer; font-size:12px; font-family:inherit;">👁 Visualizza</button>
+        <button onclick="adminResetTrial('${u.id}','${u.email}')" style="background:#e67e22; color:white; border:none; padding:7px 14px; border-radius:6px; cursor:pointer; font-size:12px; font-family:inherit;">🔄 Reset Trial</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function adminImpersonate(userId, userEmail) {
+  if (!isAdmin()) return;
+  if (!confirm(`Stai per visualizzare l'account di ${userEmail}.\nQuesta azione verrà registrata nell'audit log.`)) return;
+  addAuditEntry('IMPERSONATE_VIEW', userEmail);
+
+  try {
+    const res = await fetch('/.netlify/functions/admin-users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_user', userId, adminEmail: currentUser.email })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    // Mostra dati utente in un pannello
+    const meta = data.user?.user_metadata || {};
+    alert(`ACCOUNT: ${userEmail}\n\nAzienda: ${meta.company_name || '—'}\nTelefono: ${meta.phone || '—'}\nPiano: ${meta.plan || 'trial'}\nCrediti usati: ${meta.credits_used || 0}\nTrial scaduto: ${meta.trial_completed ? 'Sì' : 'No'}\nP.IVA: ${meta.p_iva || '—'}\nReferente stampa: ${meta.press_contact || '—'}`);
+  } catch(e) {
+    alert('Errore: ' + e.message);
+  }
+}
+
+async function adminResetTrial(userId, userEmail) {
+  if (!isAdmin()) return;
+  if (!confirm(`Resettare il trial di ${userEmail}?\n\nQuesta operazione:\n- Riattiva 7 giorni di prova\n- Azzera i crediti usati\n- Rimuove il flag trial_completed\n\nVerrà registrata nell'audit log.`)) return;
+  addAuditEntry('RESET_TRIAL', userEmail);
+
+  try {
+    const res = await fetch('/.netlify/functions/admin-users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reset_trial', userId, adminEmail: currentUser.email })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    alert(`Trial di ${userEmail} resettato con successo.`);
+    adminLoadUsers();
+  } catch(e) {
+    alert('Errore: ' + e.message);
+  }
+}
+
+
 
 function showApp() {
   document.getElementById('page-login').classList.remove('active');
   document.getElementById('page-app').classList.add('active');
   document.getElementById('user-email-display').textContent = currentUser.email;
+  // Aggiorna banner piani
+  setTimeout(updatePlansBanner, 100);
+  // Mostra sezione admin se è l'admin
+  if (isAdmin()) {
+    document.getElementById('admin-section').style.display = 'block';
+    renderAuditLog();
+  }
 }
 
 // ===== NAVIGATION =====
 function showView(view) {
+  if (view === 'admin' && !isAdmin()) return;
+  
   if (view === 'generator') {
     const meta = currentUser.user_metadata || {};
     const creditsUsed = meta.credits_used || 0;
     const maxCredits = PLAN_CREDITS[currentPlan];
     
     if (currentPlan === 'trial' && !isTrialActive) {
-      alert('Prova gratuita scaduta. Acquista un piano per continuare.');
+      document.getElementById('trial-expired-overlay').style.display = 'flex';
       return;
     }
     if (maxCredits !== 999 && creditsUsed >= maxCredits) {
@@ -1930,6 +2279,10 @@ function showView(view) {
     setPhase(1);
   }
 
+  if (view === 'admin') {
+    adminLoadUsers();
+  }
+
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('view-' + view).classList.add('active');
@@ -1938,9 +2291,12 @@ function showView(view) {
     document.querySelectorAll('.nav-item')[1].classList.add('active');
   } else if (view === 'archive') {
     document.querySelectorAll('.nav-item')[2].classList.add('active');
+  } else if (view === 'admin') {
+    // nessun nav-item attivo per admin
   } else {
     document.querySelectorAll('.nav-item')[0].classList.add('active');
   }
+
 }
 
 function switchTab(tab) {
@@ -2039,7 +2395,7 @@ async function sendMessage() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        system: SYSTEM_PROMPT,
+        system: buildSystemPrompt(),
         messages: chatHistory
       })
     });
@@ -2340,3 +2696,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
