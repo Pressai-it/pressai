@@ -2649,16 +2649,43 @@ async function showMediaOutlets() {
     `).join('') + `
       <div class="press-monitoring">
         <h4>📊 Rassegna Stampa — Piano Business</h4>
-        <p>Monitoriamo automaticamente le pubblicazioni generate dai tuoi comunicati stampa: ogni volta che una testata pubblica un articolo basato su un comunicato che hai inviato tramite Press AI, lo tracci qui.</p>
-        <ul>
-          <li>🔍 Monitoraggio quotidiano delle testate a cui hai inviato</li>
-          <li>📰 Raccolta degli articoli pubblicati con link diretto</li>
-          <li>📈 Report mensile di copertura mediatica</li>
-          <li>📧 Notifica via email ad ogni nuova pubblicazione rilevata</li>
-        </ul>
-        <p style="font-size:12px;opacity:0.6;margin-top:8px;">La rassegna stampa è attiva sui comunicati inviati tramite Press AI. Le pubblicazioni vengono rilevate entro 24-48 ore dall'uscita.</p>
+        <p>Monitoriamo ogni giorno gli articoli online che menzionano la tua azienda, per i 30 giorni successivi a ogni comunicato inviato.</p>
+        <button onclick="loadPressClippings()" style="margin:12px 0;padding:8px 18px;background:#7c3aed;border:none;border-radius:8px;color:white;font-size:13px;font-weight:600;cursor:pointer;">🔄 Aggiorna rassegna stampa</button>
+        <div id="clippings-list" style="margin-top:8px;"></div>
       </div>
     `;
+    loadPressClippings();
+  }
+}
+
+async function loadPressClippings() {
+  const container = document.getElementById('clippings-list');
+  if (!container) return;
+  container.innerHTML = '<p style="font-size:13px;color:rgba(255,255,255,0.4);">⏳ Ricerca in corso...</p>';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/.netlify/functions/press-monitoring', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ authToken: session?.access_token })
+    });
+    const data = await res.json();
+    if (data.clippings && data.clippings.length > 0) {
+      container.innerHTML = `
+        <p style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:10px;">${data.clippings.length} articoli trovati — ${data.new_found > 0 ? data.new_found + ' nuovi' : 'nessun nuovo'}</p>
+        ${data.clippings.map(c => `
+          <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:8px;margin-bottom:6px;">
+            <a href="${c.url}" target="_blank" style="color:#a78bfa;text-decoration:none;font-size:13px;">${c.title}</a>
+            <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;">${c.source || ''} · ${c.found_at ? new Date(c.found_at).toLocaleDateString('it-IT') : ''}</div>
+            ${c.snippet ? `<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px;">${c.snippet}</div>` : ''}
+          </div>
+        `).join('')}
+      `;
+    } else {
+      container.innerHTML = '<p style="font-size:13px;color:rgba(255,255,255,0.35);">Nessun articolo trovato ancora. La ricerca viene aggiornata ogni 24 ore.</p>';
+    }
+  } catch(e) {
+    container.innerHTML = '<p style="font-size:13px;color:#f87171;">Errore nel caricamento della rassegna stampa.</p>';
   }
 }
 
