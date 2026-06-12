@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Press AI</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f1a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: #1a1a2e; border-bottom: 1px solid #2d2d4e; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 18px; color: #a78bfa; font-weight: 700; }
+  .header span { font-size: 13px; color: rgba(255,255,255,0.4); }
+  .login-box { max-width: 380px; margin: 80px auto; background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 16px; padding: 40px; }
+  .login-box h2 { font-size: 20px; margin-bottom: 24px; color: #a78bfa; }
+  input { width: 100%; padding: 12px 16px; background: #0f0f1a; border: 1px solid #2d2d4e; border-radius: 10px; color: #e2e8f0; font-size: 14px; margin-bottom: 12px; }
+  input:focus { outline: none; border-color: #a78bfa; }
+  .btn { width: 100%; padding: 12px; background: #7c3aed; border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn:hover { background: #6d28d9; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+  .btn-outline { background: transparent; border: 1px solid #2d2d4e; color: #a78bfa; }
+  .btn-outline:hover { border-color: #a78bfa; }
+  .main { display: flex; height: calc(100vh - 57px); }
+  .sidebar { width: 240px; background: #1a1a2e; border-right: 1px solid #2d2d4e; padding: 20px 0; flex-shrink: 0; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 20px; font-size: 14px; cursor: pointer; color: rgba(255,255,255,0.6); transition: all 0.2s; }
+  .nav-item:hover, .nav-item.active { background: rgba(124,58,237,0.15); color: #a78bfa; }
+  .content { flex: 1; overflow-y: auto; padding: 28px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 12px; padding: 20px; }
+  .stat-card .label { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 8px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; color: #a78bfa; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { padding: 10px 14px; text-align: left; color: rgba(255,255,255,0.4); font-weight: 500; border-bottom: 1px solid #2d2d4e; }
+  tbody tr { border-bottom: 1px solid #1a1a2e; transition: background 0.15s; }
+  tbody tr:hover { background: rgba(124,58,237,0.06); }
+  tbody td { padding: 12px 14px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-trial { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+  .badge-starter { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .badge-professional { background: rgba(124,58,237,0.2); color: #a78bfa; }
+  .badge-business { background: rgba(16,185,129,0.2); color: #34d399; }
+  .detail-panel { background: #1a1a2e; border: 1px solid #2d2d4e; border-radius: 16px; padding: 24px; }
+  .detail-panel h3 { font-size: 16px; color: #a78bfa; margin-bottom: 20px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .info-item .label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+  .info-item .val { font-size: 14px; color: #e2e8f0; }
+  .section-title { font-size: 13px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; }
+  .release-item { padding: 10px 14px; background: #0f0f1a; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .clipping-item { padding: 12px 14px; background: #0f0f1a; border-radius: 8px; margin-bottom: 6px; }
+  .clipping-item a { color: #a78bfa; text-decoration: none; font-size: 13px; }
+  .clipping-item .meta { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+  .msg-error { color: #f87171; font-size: 13px; margin-top: 8px; }
+  #loading { text-align: center; padding: 40px; color: rgba(255,255,255,0.4); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2>🔐 Admin Press AI</h2>
+    <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:24px;">Accesso riservato a Sandra Manzi</p>
+    <input type="email" id="admin-email" placeholder="Email" value="sandramanzi@mediacomunikiamo.it">
+    <input type="password" id="admin-password" placeholder="Password">
+    <button class="btn" onclick="adminLogin()">Accedi</button>
+    <p class="msg-error" id="login-error"></p>
+  </div>
+</div>
+
+<!-- APP ADMIN -->
+<div id="admin-app" style="display:none;">
+  <div class="header">
+    <h1>⚡ Press AI Admin</h1>
+    <span id="admin-user-label"></span>
+    <button class="btn-sm btn-outline" onclick="adminLogout()">Esci</button>
+  </div>
+  <div class="main">
+    <div class="sidebar">
+      <div class="nav-item active" onclick="showSection('dashboard')">📊 Dashboard</div>
+      <div class="nav-item" onclick="showSection('users')">👥 Clienti</div>
+      <div class="nav-item" onclick="showSection('audit')">📋 Audit Log</div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="section-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="label">Totale clienti</div><div class="value" id="stat-total">—</div></div>
+          <div class="stat-card"><div class="label">Piani attivi</div><div class="value" id="stat-paid">—</div></div>
+          <div class="stat-card"><div class="label">Trial attivi</div><div class="value" id="stat-trial">—</div></div>
+          <div class="stat-card"><div class="label">Business</div><div class="value" id="stat-business">—</div></div>
+        </div>
+        <div id="loading">Caricamento dati...</div>
+      </div>
+
+      <!-- CLIENTI -->
+      <div id="section-users" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2 style="font-size:18px;">Clienti</h2>
+          <input id="search-users" placeholder="🔍 Cerca per nome o email..." style="width:280px;margin-bottom:0;" oninput="filterUsers()">
+        </div>
+        <div id="users-table-container"></div>
+      </div>
+
+      <!-- DETAIL CLIENTE -->
+      <div id="section-user-detail" style="display:none;">
+        <button class="btn-sm btn-outline" onclick="showSection('users')" style="margin-bottom:20px;">← Torna alla lista</button>
+        <div id="user-detail-content"></div>
+      </div>
+
+      <!-- AUDIT LOG -->
+      <div id="section-audit" style="display:none;">
+        <h2 style="font-size:18px;margin-bottom:20px;">Audit Log (GDPR)</h2>
+        <div id="audit-content"><p style="color:rgba(255,255,255,0.4);font-size:13px;">Funzione disponibile — le operazioni admin vengono registrate automaticamente in Supabase nella tabella admin_audit_log.</p></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://mvqgonxzhwsfmanvoxpn.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12cWdvbnh6aHdzZm1hbnZveHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4OTk0NDUsImV4cCI6MjA2MDQ3NTQ0NX0.tGjHBMg0sGJblh_3EiSQ-NrUDPzHIPt3LDvRjVPhh6E';
+const ADMIN_EMAIL = 'sandramanzi@mediacomunikiamo.it';
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let adminToken = null;
+let allUsers = [];
+
+async function adminLogin() {
+  const email = document.getElementById('admin-email').value;
+  const password = document.getElementById('admin-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error || data.user.email !== ADMIN_EMAIL) {
+    errEl.textContent = 'Accesso negato. Solo Sandra può accedere.';
+    await sb.auth.signOut();
+    return;
+  }
+  adminToken = data.session.access_token;
+  document.getElementById('admin-user-label').textContent = data.user.email;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-app').style.display = 'block';
+  loadDashboard();
+}
+
+async function adminLogout() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+function showSection(name) {
+  ['dashboard','users','user-detail','audit'].forEach(s => {
+    document.getElementById('section-' + s).style.display = 'none';
+  });
+  document.getElementById('section-' + name).style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  if (name === 'dashboard') { document.querySelectorAll('.nav-item')[0].classList.add('active'); loadDashboard(); }
+  if (name === 'users') { document.querySelectorAll('.nav-item')[1].classList.add('active'); loadUsers(); }
+  if (name === 'audit') { document.querySelectorAll('.nav-item')[2].classList.add('active'); }
+}
+
+async function callAdmin(body) {
+  const res = await fetch('/.netlify/functions/admin-users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...body, authToken: adminToken })
+  });
+  return res.json();
+}
+
+async function loadDashboard() {
+  document.getElementById('loading').style.display = 'block';
+  const data = await callAdmin({ action: 'list_users' });
+  document.getElementById('loading').style.display = 'none';
+  const users = data.users || [];
+  allUsers = users;
+  document.getElementById('stat-total').textContent = users.length;
+  document.getElementById('stat-paid').textContent = users.filter(u => u.plan && u.plan !== 'trial').length;
+  document.getElementById('stat-trial').textContent = users.filter(u => !u.plan || u.plan === 'trial').length;
+  document.getElementById('stat-business').textContent = users.filter(u => u.plan === 'business').length;
+}
+
+async function loadUsers() {
+  const data = await callAdmin({ action: 'list_users' });
+  allUsers = data.users || [];
+  renderUsersTable(allUsers);
+}
+
+function renderUsersTable(users) {
+  const container = document.getElementById('users-table-container');
+  if (!users.length) { container.innerHTML = '<p style="color:rgba(255,255,255,0.4);font-size:13px;">Nessun cliente trovato.</p>'; return; }
+  container.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Azienda</th><th>Email</th><th>Piano</th><th>Città</th><th>Comunicati</th><th>Iscritto</th><th>Azioni</th>
+      </tr></thead>
+      <tbody>
+        ${users.map(u => `
+          <tr>
+            <td>${u.ragione_sociale || '—'}</td>
+            <td style="color:rgba(255,255,255,0.6)">${u.email || '—'}</td>
+            <td><span class="badge badge-${u.plan || 'trial'}">${u.plan || 'trial'}</span></td>
+            <td style="color:rgba(255,255,255,0.6)">${u.city || '—'}</td>
+            <td style="text-align:center">${u.credits_used || 0}</td>
+            <td style="color:rgba(255,255,255,0.4)">${u.created_at ? new Date(u.created_at).toLocaleDateString('it-IT') : '—'}</td>
+            <td>
+              <button class="btn-sm btn-outline" onclick="loadUserDetail('${u.id}')">Dettaglio</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function filterUsers() {
+  const q = document.getElementById('search-users').value.toLowerCase();
+  const filtered = allUsers.filter(u =>
+    (u.ragione_sociale || '').toLowerCase().includes(q) ||
+    (u.email || '').toLowerCase().includes(q) ||
+    (u.city || '').toLowerCase().includes(q)
+  );
+  renderUsersTable(filtered);
+}
+
+async function loadUserDetail(userId) {
+  showSection('user-detail');
+  document.getElementById('user-detail-content').innerHTML = '<div id="loading">Caricamento...</div>';
+  const data = await callAdmin({ action: 'get_user_detail', targetUserId: userId });
+  const p = data.profile || {};
+  const releases = data.releases || [];
+  const clippings = data.clippings || [];
+
+  document.getElementById('user-detail-content').innerHTML = `
+    <div class="detail-panel">
+      <h3>${p.ragione_sociale || 'Cliente'} — ${data.email || ''}</h3>
+      <div class="info-grid">
+        <div class="info-item"><div class="label">Piano</div><div class="val"><span class="badge badge-${p.plan || 'trial'}">${p.plan || 'trial'}</span></div></div>
+        <div class="info-item"><div class="label">P.IVA</div><div class="val">${p.p_iva || '—'}</div></div>
+        <div class="info-item"><div class="label">Città</div><div class="val">${p.city || '—'}</div></div>
+        <div class="info-item"><div class="label">Comunicati generati</div><div class="val">${p.credits_used || 0}</div></div>
+        <div class="info-item"><div class="label">Trial scadenza</div><div class="val">${p.trial_end_date ? new Date(p.trial_end_date).toLocaleDateString('it-IT') : '—'}</div></div>
+        <div class="info-item"><div class="label">Iscrizione</div><div class="val">${p.created_at ? new Date(p.created_at).toLocaleDateString('it-IT') : '—'}</div></div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:24px;">
+        <select id="plan-select-${userId}" style="padding:8px 12px;background:#0f0f1a;border:1px solid #2d2d4e;border-radius:8px;color:#e2e8f0;font-size:13px;">
+          <option value="trial" ${p.plan==='trial'?'selected':''}>Trial</option>
+          <option value="starter" ${p.plan==='starter'?'selected':''}>Starter €149</option>
+          <option value="professional" ${p.plan==='professional'?'selected':''}>Professional €249</option>
+          <option value="business" ${p.plan==='business'?'selected':''}>Business €399</option>
+        </select>
+        <button class="btn-sm" style="background:#7c3aed;color:white;" onclick="changePlan('${userId}')">Aggiorna piano</button>
+        <button class="btn-sm btn-outline" onclick="resetTrial('${userId}')">Reset trial</button>
+      </div>
+
+      <div class="section-title">Comunicati stampa (${releases.length})</div>
+      ${releases.length ? releases.map(r => `
+        <div class="release-item">
+          <span style="font-size:13px;">${r.title || 'Comunicato senza titolo'}</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.3)">${new Date(r.created_at).toLocaleDateString('it-IT')}</span>
+        </div>
+      `).join('') : '<p style="font-size:13px;color:rgba(255,255,255,0.3)">Nessun comunicato ancora.</p>'}
+
+      ${p.plan === 'business' ? `
+        <div class="section-title">Rassegna Stampa — ultimi 30 giorni (${clippings.length} articoli)</div>
+        ${clippings.length ? clippings.map(c => `
+          <div class="clipping-item">
+            <a href="${c.url}" target="_blank">${c.title}</a>
+            <div class="meta">${c.source || ''} · ${c.found_at ? new Date(c.found_at).toLocaleDateString('it-IT') : ''}</div>
+            ${c.snippet ? `<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px;">${c.snippet}</div>` : ''}
+          </div>
+        `).join('') : '<p style="font-size:13px;color:rgba(255,255,255,0.3)">Nessun articolo trovato ancora.</p>'}
+      ` : ''}
+    </div>
+  `;
+}
+
+async function changePlan(userId) {
+  const newPlan = document.getElementById('plan-select-' + userId).value;
+  const data = await callAdmin({ action: 'change_plan', targetUserId: userId, newPlan });
+  if (data.success) alert(`✅ Piano aggiornato a ${newPlan}`);
+  else alert('Errore: ' + data.error);
+}
+
+async function resetTrial(userId) {
+  if (!confirm('Resettare il trial per questo cliente?')) return;
+  const data = await callAdmin({ action: 'reset_trial', targetUserId: userId });
+  if (data.success) alert('✅ Trial resettato');
+  else alert('Errore: ' + data.error);
+}
+
+// Auto-login se sessione attiva
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session && session.user.email === ADMIN_EMAIL) {
+    adminToken = session.access_token;
+    document.getElementById('admin-user-label').textContent = session.user.email;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-app').style.display = 'block';
+    loadDashboard();
+  }
+})();
+</script>
+</body>
+</html>
