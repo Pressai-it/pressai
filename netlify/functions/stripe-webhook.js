@@ -20,7 +20,7 @@ exports.handler = async (event, context) => {
     // Init Supabase con service key
     const supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_KEY
+      process.env.SUPABASE_SERVICE_ROLE
     );
 
     // Gestisci evento checkout.session.completed
