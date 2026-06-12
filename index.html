@@ -2137,7 +2137,7 @@ async function adminLoadUsers() {
     const res = await fetch('/.netlify/functions/admin-users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'list_users', adminEmail: currentUser.email })
+      body: JSON.stringify({ action: 'list_users', authToken: (await sb.auth.getSession()).data.session?.access_token })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
@@ -2196,7 +2196,7 @@ async function adminImpersonate(userId, userEmail) {
     const res = await fetch('/.netlify/functions/admin-users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get_user', userId, adminEmail: currentUser.email })
+      body: JSON.stringify({ action: 'get_user_detail', targetUserId: userId, authToken: (await sb.auth.getSession()).data.session?.access_token })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
@@ -2218,7 +2218,7 @@ async function adminResetTrial(userId, userEmail) {
     const res = await fetch('/.netlify/functions/admin-users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reset_trial', userId, adminEmail: currentUser.email })
+      body: JSON.stringify({ action: 'reset_trial', targetUserId: userId, authToken: (await sb.auth.getSession()).data.session?.access_token })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
