@@ -42,7 +42,7 @@ exports.handler = async (event, context) => {
     // Init Supabase
     const supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_KEY
+      process.env.SUPABASE_SERVICE_ROLE
     );
 
     // Verifica utente
