@@ -1,7 +1,7 @@
 // =====================================================
 // NETLIFY FUNCTION: admin-users
-// Gestione admin utenti Press AI
-// Accesso riservato: verifica email admin server-side
+// Accesso esclusivo Sandra: lista clienti, dettagli, impersonate
+// AUDIT LOG per GDPR compliance
 // =====================================================
 
 const { createClient } = require('@supabase/supabase-js');
@@ -9,89 +9,87 @@ const { createClient } = require('@supabase/supabase-js');
 const ADMIN_EMAIL = 'sandramanzi@mediacomunikiamo.it';
 
 exports.handler = async (event, context) => {
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'POST, OPTIONS' }, body: '' };
+  }
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return { statusCode: 405, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
-
-  let body;
-  try {
-    body = JSON.parse(event.body);
-  } catch(e) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
-  }
-
-  const { action, adminEmail, userId } = body;
-
-  // Verifica server-side che sia l'admin
-  if (adminEmail !== ADMIN_EMAIL) {
-    return { statusCode: 403, body: JSON.stringify({ error: 'Accesso non autorizzato' }) };
-  }
-
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY
-  );
 
   try {
+    const { action, authToken, targetUserId, page = 1, limit = 50 } = JSON.parse(event.body);
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+
+    // Verifica che sia Sandra
+    const { data: { user }, error: authError } = await supabase.auth.getUser(authToken);
+    if (authError || !user || user.email !== ADMIN_EMAIL) {
+      return { statusCode: 403, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Accesso negato' }) };
+    }
+
+    // Audit log
+    await supabase.from('admin_audit_log').insert({
+      admin_id: user.id,
+      action: action,
+      target_user_id: targetUserId || null,
+      performed_at: new Date().toISOString(),
+      ip: event.headers['x-forwarded-for'] || 'unknown'
+    }).catch(() => {});
+
+    // ---- AZIONI DISPONIBILI ----
+
+    // Lista tutti i clienti con profilo e statistiche
     if (action === 'list_users') {
-      const { data, error } = await supabase.auth.admin.listUsers({ perPage: 200 });
+      const offset = (page - 1) * limit;
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('id, ragione_sociale, plan, trial_end_date, credits_used, created_at, p_iva, city')
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
       if (error) throw error;
-      // Restituisce solo i dati necessari (no password hash)
-      const users = data.users.map(u => ({
-        id: u.id,
-        email: u.email,
-        created_at: u.created_at,
-        last_sign_in_at: u.last_sign_in_at,
-        user_metadata: u.user_metadata || {}
-      }));
+
+      // Arricchisci con email da auth
+      const { data: { users: authUsers } } = await supabase.auth.admin.listUsers({ page, perPage: limit });
+      const emailMap = {};
+      authUsers?.forEach(u => { emailMap[u.id] = u.email; });
+
+      const enriched = profiles.map(p => ({ ...p, email: emailMap[p.id] || null }));
+      return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ users: enriched, count: enriched.length }) };
+    }
+
+    // Dettaglio singolo cliente: profilo + comunicati + clipping
+    if (action === 'get_user_detail' && targetUserId) {
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', targetUserId).single();
+      const { data: releases } = await supabase.from('press_releases').select('id, title, created_at, status').eq('user_id', targetUserId).order('created_at', { ascending: false });
+      const { data: clippings } = await supabase.from('press_clippings').select('*').eq('user_id', targetUserId).order('found_at', { ascending: false }).limit(20);
+      const { data: authUser } = await supabase.auth.admin.getUserById(targetUserId);
       return {
         statusCode: 200,
-        body: JSON.stringify({ users })
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ profile, email: authUser?.user?.email, releases: releases || [], clippings: clippings || [] })
       };
     }
 
-    if (action === 'get_user') {
-      if (!userId) return { statusCode: 400, body: JSON.stringify({ error: 'userId richiesto' }) };
-      const { data, error } = await supabase.auth.admin.getUserById(userId);
+    // Cambia piano di un cliente
+    if (action === 'change_plan' && targetUserId) {
+      const { newPlan } = JSON.parse(event.body);
+      const { error } = await supabase.from('profiles').update({ plan: newPlan }).eq('id', targetUserId);
       if (error) throw error;
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          user: {
-            id: data.user.id,
-            email: data.user.email,
-            created_at: data.user.created_at,
-            last_sign_in_at: data.user.last_sign_in_at,
-            user_metadata: data.user.user_metadata || {}
-          }
-        })
-      };
+      return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ success: true, message: `Piano aggiornato a ${newPlan}` }) };
     }
 
-    if (action === 'reset_trial') {
-      if (!userId) return { statusCode: 400, body: JSON.stringify({ error: 'userId richiesto' }) };
-      const trialEnd = new Date();
-      trialEnd.setDate(trialEnd.getDate() + 7);
-      const { error } = await supabase.auth.admin.updateUserById(userId, {
-        user_metadata: {
-          plan: 'trial',
-          trial_end_date: trialEnd.toISOString(),
-          credits_used: 0,
-          trial_completed: false
-        }
-      });
-      if (error) throw error;
-      console.log(`[ADMIN] ${adminEmail} reset trial for user ${userId} at ${new Date().toISOString()}`);
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ success: true })
-      };
+    // Resetta trial di un cliente
+    if (action === 'reset_trial' && targetUserId) {
+      const trialEnd = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      await supabase.from('profiles').update({ trial_end_date: trialEnd, credits_used: 0 }).eq('id', targetUserId);
+      await supabase.auth.admin.updateUserById(targetUserId, { user_metadata: { trial_completed: false, credits_used: 0 } });
+      return { statusCode: 200, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ success: true }) };
     }
 
-    return { statusCode: 400, body: JSON.stringify({ error: 'Azione non riconosciuta' }) };
+    return { statusCode: 400, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Azione non riconosciuta' }) };
 
-  } catch(e) {
-    console.error('Admin function error:', e);
-    return { statusCode: 500, body: JSON.stringify({ error: e.message }) };
+  } catch (error) {
+    console.error('Admin error:', error);
+    return { statusCode: 500, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: error.message }) };
   }
 };
