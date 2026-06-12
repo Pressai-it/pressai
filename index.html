@@ -1861,8 +1861,59 @@ Se una frase inizia con "Finalmente" o "Oggi più che mai" → CANCELLALA
 Scrivi come scrivono i giornalisti professionisti italiani con 20 anni di esperienza in redazioni economiche.`;
 }
 
+// ===== GESTIONE RECUPERO PASSWORD =====
+// Controlla se l'URL contiene un token di recupero password
+async function checkPasswordRecovery() {
+  const hash = window.location.hash;
+  if (hash && hash.includes('type=recovery')) {
+    // Mostra il modale per impostare la nuova password
+    document.getElementById('modal-reset-password').style.display = 'flex';
+    return true;
+  }
+  // Controlla anche i parametri query (Supabase v2)
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('type') === 'recovery') {
+    document.getElementById('modal-reset-password').style.display = 'flex';
+    return true;
+  }
+  return false;
+}
+
+async function doResetPassword() {
+  const newPassword = document.getElementById('new-password').value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+  const msgEl = document.getElementById('reset-password-msg');
+
+  if (!newPassword || newPassword.length < 8) {
+    msgEl.textContent = 'La password deve essere di almeno 8 caratteri.';
+    msgEl.style.color = '#e74c3c';
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    msgEl.textContent = 'Le due password non coincidono.';
+    msgEl.style.color = '#e74c3c';
+    return;
+  }
+
+  const { error } = await sb.auth.updateUser({ password: newPassword });
+  if (error) {
+    msgEl.textContent = 'Errore: ' + error.message;
+    msgEl.style.color = '#e74c3c';
+  } else {
+    msgEl.textContent = '✅ Password aggiornata! Ora puoi accedere.';
+    msgEl.style.color = '#27ae60';
+    setTimeout(() => {
+      document.getElementById('modal-reset-password').style.display = 'none';
+      window.location.href = 'https://app.pressai.it';
+    }, 2000);
+  }
+}
+
 // ===== AUTH =====
 async function init() {
+  // Controlla prima se è un link di recupero password
+  const isRecovery = await checkPasswordRecovery();
+  if (isRecovery) return;
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     currentUser = session.user;
@@ -2810,6 +2861,24 @@ document.addEventListener('DOMContentLoaded', () => {
   init();
 });
 </script>
+<!-- MODALE RESET PASSWORD -->
+<div id="modal-reset-password" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#1a3a5c; border-radius:16px; padding:40px; max-width:400px; width:90%; text-align:center;">
+    <h2 style="color:#b8860b; margin-bottom:8px;">🔐 Nuova password</h2>
+    <p style="color:rgba(255,255,255,0.7); font-size:14px; margin-bottom:24px;">Scegli una nuova password per accedere a Press AI</p>
+    <div style="margin-bottom:16px; text-align:left;">
+      <label style="font-size:13px; color:rgba(255,255,255,0.6); display:block; margin-bottom:6px;">Nuova password</label>
+      <input type="password" id="new-password" placeholder="Min. 8 caratteri" style="width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.1); color:white; font-size:14px;">
+    </div>
+    <div style="margin-bottom:20px; text-align:left;">
+      <label style="font-size:13px; color:rgba(255,255,255,0.6); display:block; margin-bottom:6px;">Conferma password</label>
+      <input type="password" id="confirm-password" placeholder="Ripeti la password" style="width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.1); color:white; font-size:14px;">
+    </div>
+    <p id="reset-password-msg" style="font-size:13px; margin-bottom:16px; min-height:20px;"></p>
+    <button onclick="doResetPassword()" style="width:100%; padding:14px; background:#b8860b; border:none; border-radius:10px; color:white; font-size:15px; font-weight:700; cursor:pointer;">Salva nuova password</button>
+  </div>
+</div>
+
 </body>
 </html>
 
