@@ -18,7 +18,7 @@ exports.handler = async (event, context) => {
 
   try {
     const { action, authToken, targetUserId, page = 1, limit = 50 } = JSON.parse(event.body);
-    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE);
 
     // Verifica che sia Sandra
     const { data: { user }, error: authError } = await supabase.auth.getUser(authToken);
