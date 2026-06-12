@@ -31,13 +31,15 @@ exports.handler = async (event, context) => {
     }
 
     // Audit log
-    await supabaseAdmin.from('admin_audit_log').insert({
-      admin_id: user.id,
-      action: action,
-      target_user_id: targetUserId || null,
-      performed_at: new Date().toISOString(),
-      ip: event.headers['x-forwarded-for'] || 'unknown'
-    }).catch(() => {});
+    try {
+      await supabaseAdmin.from('admin_audit_log').insert({
+        admin_id: user.id,
+        action: action,
+        target_user_id: targetUserId || null,
+        performed_at: new Date().toISOString(),
+        ip: event.headers['x-forwarded-for'] || 'unknown'
+      });
+    } catch(e) { console.log('Audit log error:', e.message); }
 
     // ---- AZIONI DISPONIBILI ----
 
