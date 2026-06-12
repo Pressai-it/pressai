@@ -1211,6 +1211,9 @@
         <input type="password" id="login-password" placeholder="••••••••">
       </div>
       <button class="btn-primary" onclick="doLogin()">Accedi</button>
+      <p style="text-align:center; margin-top:12px;">
+        <a href="#" onclick="doForgotPassword()" style="font-size:13px; color:#b8860b; text-decoration:none;">Hai dimenticato la password?</a>
+      </p>
     </div>
 
     <!-- Register form -->
@@ -1874,6 +1877,22 @@ async function init() {
     }
     checkTrialStatus();
     showApp();
+  }
+}
+
+async function doForgotPassword() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) {
+    showMsg('Inserisci prima la tua email nel campo sopra.', 'error');
+    return;
+  }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://app.pressai.it'
+  });
+  if (error) {
+    showMsg('Errore: ' + error.message, 'error');
+  } else {
+    showMsg('Email inviata! Controlla la tua casella (anche spam).', 'success');
   }
 }
 
