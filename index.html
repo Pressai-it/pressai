@@ -2164,19 +2164,17 @@ function renderAdminUsers(users) {
     return;
   }
   listEl.innerHTML = users.map(u => {
-    const meta = u.user_metadata || {};
-    const plan = meta.plan || 'trial';
-    const trialCompleted = meta.trial_completed ? '⛔ Trial completato' : '';
+    const plan = u.plan || 'trial';
     const planColor = plan === 'trial' ? '#888' : plan === 'business' ? '#b8860b' : '#1a3a5c';
     return `
     <div style="background:white; border:1px solid var(--border); border-radius:10px; padding:16px 18px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
       <div>
-        <div style="font-weight:600; font-size:14px;">${meta.company_name || '—'}</div>
-        <div style="font-size:13px; color:var(--text-muted);">${u.email}</div>
+        <div style="font-weight:600; font-size:14px;">${u.ragione_sociale || '—'}</div>
+        <div style="font-size:13px; color:var(--text-muted);">${u.email || '—'}</div>
         <div style="font-size:12px; margin-top:4px;">
           <span style="background:${planColor}; color:white; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">${plan.toUpperCase()}</span>
-          ${trialCompleted ? `<span style="color:var(--error); font-size:11px; margin-left:8px;">${trialCompleted}</span>` : ''}
-          <span style="color:var(--text-muted); margin-left:8px;">Crediti usati: ${meta.credits_used || 0}</span>
+          <span style="color:var(--text-muted); margin-left:8px;">Crediti usati: ${u.credits_used || 0}</span>
+          <span style="color:var(--text-muted); margin-left:8px;">${u.city || ''}</span>
         </div>
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
