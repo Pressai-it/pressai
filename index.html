@@ -1486,7 +1486,7 @@
           <span style="color:#c9a84c; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Professional</span>
           <span style="color:#f7f3ec; font-size:32px; font-weight:700; font-family:'Playfair Display',serif;">€249</span>
           <span style="color:rgba(255,255,255,0.5); font-size:12px;">al mese</span>
-          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">10 comunicati/mese</span>
+          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">5 comunicati/mese</span>
           <span style="color:rgba(255,255,255,0.7); font-size:13px;">Email + telefono giornalisti</span>
           <span style="background:#b8860b; color:#fff; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; margin-top:12px;">Acquista →</span>
         </a>
@@ -1494,7 +1494,7 @@
           <span style="color:#c9a84c; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Business</span>
           <span style="color:#f7f3ec; font-size:32px; font-weight:700; font-family:'Playfair Display',serif;">€399</span>
           <span style="color:rgba(255,255,255,0.5); font-size:12px;">al mese</span>
-          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">Comunicati illimitati</span>
+          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">Comunicati 10/mese</span>
           <span style="color:rgba(255,255,255,0.7); font-size:13px;">Email + tel + rassegna stampa</span>
           <span style="background:#b8860b; color:#fff; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; margin-top:12px;">Acquista →</span>
         </a>
@@ -1620,7 +1620,7 @@
               <span style="color:#c9a84c; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Professional</span>
               <span style="color:#f7f3ec; font-size:26px; font-weight:700; font-family:'Playfair Display',serif;">€249</span>
               <span style="color:rgba(255,255,255,0.4); font-size:11px; margin-bottom:6px;">al mese</span>
-              <span style="color:rgba(255,255,255,0.7); font-size:12px;">10 comunicati/mese</span>
+              <span style="color:rgba(255,255,255,0.7); font-size:12px;">5 comunicati/mese</span>
               <span style="color:rgba(255,255,255,0.7); font-size:12px;">Email + telefono</span>
               <span style="background:#b8860b; color:#fff; padding:8px 18px; border-radius:5px; font-size:12px; font-weight:600; margin-top:10px; display:block;">Attiva →</span>
             </a>
@@ -1628,7 +1628,7 @@
               <span style="color:#c9a84c; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Business</span>
               <span style="color:#f7f3ec; font-size:26px; font-weight:700; font-family:'Playfair Display',serif;">€399</span>
               <span style="color:rgba(255,255,255,0.4); font-size:11px; margin-bottom:6px;">al mese</span>
-              <span style="color:rgba(255,255,255,0.7); font-size:12px;">Illimitati</span>
+              <span style="color:rgba(255,255,255,0.7); font-size:12px;">10 comunicati/mese</span>
               <span style="color:rgba(255,255,255,0.7); font-size:12px;">Email + tel + rassegna</span>
               <span style="background:#b8860b; color:#fff; padding:8px 18px; border-radius:5px; font-size:12px; font-weight:600; margin-top:10px; display:block;">Attiva →</span>
             </a>
@@ -1754,10 +1754,10 @@ const STRIPE_LINKS = {
 };
 
 const PLAN_CREDITS = { 
-  trial: 2,
+  trial: 1,
   starter: 3, 
-  professional: 10, 
-  business: 999 
+  professional: 5, 
+  business: 10 
 };
 
 const MEDIA_OUTLETS = [
@@ -2039,7 +2039,7 @@ async function loadUserPlan() {
   
   const creditsUsed = meta.credits_used || 0;
   const planCredits = PLAN_CREDITS[currentPlan];
-  const remaining = planCredits === 999 ? '∞' : Math.max(0, planCredits - creditsUsed);
+  const remaining = Math.max(0, planCredits - creditsUsed);
 
   if (isTrialActive) {
     document.getElementById('user-plan-badge').textContent = 'Prova Gratuita';
