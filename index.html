@@ -1690,7 +1690,7 @@
               rows="1"
               onkeydown="handleKey(event)"
             ></textarea>
-            <button class="btn-send" id="btn-send" onclick="sendMessage()">➤</button>
+            <button class="btn-send" id="btn-send" onclick="checkDisclaimerAndSend()">➤</button>
           </div>
         </div>
 
@@ -1737,6 +1737,22 @@
       </div>
 
     </main>
+
+    <!-- FOOTER DISCLAIMER -->
+    <footer style="background:#f8f7f4; border-top:1px solid #e0d8cc; padding:14px 24px; text-align:center;">
+      <p style="font-size:11px; color:#999; line-height:1.6; max-width:800px; margin:0 auto;">
+        I comunicati stampa generati da Press AI sono testi automatici basati sulle informazioni fornite dall'utente. 
+        <strong style="color:#777;">La responsabilità della veridicità dei contenuti, dell'invio alle testate e di ogni effetto derivante dalla pubblicazione è esclusivamente dell'utente.</strong>
+        Press AI e Media Comunikiamo non rispondono di eventuali inesattezze o danni derivanti dall'utilizzo dei testi generati.
+        &nbsp;·&nbsp;
+        <a href="#" onclick="openModal('privacy-modal'); return false;" style="color:#b8860b; text-decoration:none;">Privacy Policy</a>
+        &nbsp;·&nbsp;
+        <a href="#" onclick="openModal('cookies-modal'); return false;" style="color:#b8860b; text-decoration:none;">Cookie Policy</a>
+        &nbsp;·&nbsp;
+        <a href="#" onclick="openModal('terms-modal'); return false;" style="color:#b8860b; text-decoration:none;">Termini e Condizioni</a>
+      </p>
+    </footer>
+
   </div>
 </div>
 
@@ -2430,8 +2446,22 @@ function renderUploadedFiles() {
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
-    sendMessage();
+    checkDisclaimerAndSend();
   }
+}
+
+function checkDisclaimerAndSend() {
+  if (sessionStorage.getItem('disclaimer_accepted')) {
+    sendMessage();
+    return;
+  }
+  document.getElementById('disclaimer-modal').style.display = 'flex';
+}
+
+function acceptDisclaimerAndGenerate() {
+  sessionStorage.setItem('disclaimer_accepted', '1');
+  document.getElementById('disclaimer-modal').style.display = 'none';
+  sendMessage();
 }
 
 async function sendMessage() {
@@ -2861,6 +2891,34 @@ document.addEventListener('DOMContentLoaded', () => {
   init();
 });
 </script>
+<!-- MODALE DISCLAIMER RESPONSABILITÀ -->
+<div id="disclaimer-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:white; border-radius:16px; padding:32px; max-width:480px; width:100%;">
+    <h3 style="color:#1a3a5c; font-size:18px; margin-bottom:12px;">📋 Prima di generare il comunicato</h3>
+    <p style="font-size:14px; color:#555; line-height:1.6; margin-bottom:20px;">
+      Press AI genera un testo giornalistico professionale basato sulle informazioni che hai fornito.
+    </p>
+    <div style="background:#fdf6e3; border:1px solid #e8d5a3; border-radius:10px; padding:16px; margin-bottom:20px;">
+      <p style="font-size:13px; color:#555; line-height:1.7; margin:0;">
+        ✅ Verifico che tutte le informazioni fornite siano veritiere e accurate.<br>
+        ✅ Sono consapevole che la responsabilità del contenuto del comunicato e del suo invio alle testate è mia.<br>
+        ✅ Ho letto e accetto la <a href="#" onclick="openModal('privacy-modal'); return false;" style="color:#b8860b;">Privacy Policy</a> e i <a href="#" onclick="openModal('terms-modal'); return false;" style="color:#b8860b;">Termini e Condizioni</a>.
+      </p>
+    </div>
+    <div style="display:flex; gap:12px;">
+      <button onclick="document.getElementById('disclaimer-modal').style.display='none'" 
+        style="flex:1; padding:12px; background:white; border:1px solid #ddd; border-radius:8px; cursor:pointer; font-size:14px; color:#777;">
+        Annulla
+      </button>
+      <button onclick="acceptDisclaimerAndGenerate()" 
+        style="flex:2; padding:12px; background:#1a3a5c; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; color:white;">
+        Accetto — Genera il comunicato
+      </button>
+    </div>
+    <p style="font-size:11px; color:#aaa; text-align:center; margin-top:12px;">Questa conferma viene richiesta una sola volta per sessione.</p>
+  </div>
+</div>
+
 <!-- MODALE RESET PASSWORD -->
 <div id="modal-reset-password" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
   <div style="background:#1a3a5c; border-radius:16px; padding:40px; max-width:400px; width:90%; text-align:center;">
