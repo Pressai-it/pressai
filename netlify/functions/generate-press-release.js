@@ -4,7 +4,6 @@
 const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
-  // Solo POST
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -15,16 +14,15 @@ exports.handler = async (event, context) => {
   try {
     const { messages, system } = JSON.parse(event.body);
 
-    // Chiama API Anthropic (server-side, sicuro)
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY, // Da variabile ambiente Netlify
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 4096,
         system: system,
         messages: messages
@@ -45,9 +43,7 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(result)
     };
 
@@ -61,4 +57,3 @@ exports.handler = async (event, context) => {
     };
   }
 };
-
