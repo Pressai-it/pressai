@@ -1244,7 +1244,7 @@
       </div>
       
       <details style="margin: 15px 0; padding: 10px; background: #f8f8f8; border-radius: 5px;">
-        <summary style="cursor: pointer; font-weight: bold; color: #1A3A5C;">📋 Dati fiscali (facoltativo per trial)</summary>
+        <summary style="cursor: pointer; font-weight: bold; color: #1A3A5C;">📋 Dati fiscali azienda <span style="color:#c0392b;font-size:12px;">(obbligatori)</span></summary>
         <div style="margin-top: 15px;">
           <div class="form-group">
             <label>Partita IVA</label>
@@ -1946,6 +1946,7 @@ async function init() {
   if (session) {
     currentUser = session.user;
     await loadUserPlan();
+  await loadReleases();
     // Blocca accesso se trial già completato e non ha piano pagato
     const meta = currentUser.user_metadata || {};
     if (meta.trial_completed && (!meta.plan || meta.plan === 'trial')) {
@@ -2800,20 +2801,60 @@ async function loadPressClippings() {
 }
 
 // ===== RELEASES =====
-function saveRelease(content) {
-  const releases = getStoredReleases();
+async function saveRelease(content) {
   const title = extractTitle(content);
-  releases.unshift({
-    id: Date.now(),
-    title,
-    date: new Date().toISOString(),
-    status: 'draft',
-    content
-  });
-  localStorage.setItem('pressai_releases_' + currentUser.id, JSON.stringify(releases));
-  renderRecentList(releases);
-  renderArchive(releases);
-  document.getElementById('stat-total').textContent = releases.length;
+  const sector = detectSectorFromRelease(content);
+  try {
+    const { data, error } = await sb
+      .from('press_releases')
+      .insert({
+        user_id: currentUser.id,
+        title,
+        content,
+        status: 'draft',
+        sector
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    await loadReleases();
+  } catch(e) {
+    console.error('Errore salvataggio comunicato:', e);
+    // Fallback su localStorage se Supabase non disponibile
+    const releases = getStoredReleases();
+    releases.unshift({ id: Date.now(), title, date: new Date().toISOString(), status: 'draft', content });
+    localStorage.setItem('pressai_releases_' + currentUser.id, JSON.stringify(releases));
+    renderRecentList(releases);
+    renderArchive(releases);
+  }
+}
+
+async function loadReleases() {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await sb
+      .from('press_releases')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    const releases = (data || []).map(r => ({
+      id: r.id,
+      title: r.title,
+      date: r.created_at,
+      status: r.status,
+      content: r.content,
+      sector: r.sector
+    }));
+    renderRecentList(releases);
+    renderArchive(releases);
+    document.getElementById('stat-total').textContent = releases.length;
+  } catch(e) {
+    console.error('Errore caricamento comunicati:', e);
+    const releases = getStoredReleases();
+    renderRecentList(releases);
+    renderArchive(releases);
+  }
 }
 
 function getStoredReleases() {
@@ -2852,14 +2893,53 @@ function renderArchive(releases) {
     return;
   }
   container.innerHTML = releases.map(r => `
-    <div class="release-card">
+    <div class="release-card" style="cursor:pointer;" onclick="readRelease('${r.id}', ${JSON.stringify(r.content).replace(/'/g, "\'")})">
       <div class="release-info">
         <h4>${escapeHtml(r.title)}</h4>
         <span>${new Date(r.date).toLocaleDateString('it-IT')}</span>
       </div>
-      <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
+        <button onclick="event.stopPropagation(); readRelease('${r.id}', ${JSON.stringify(r.content).replace(/'/g, "\'")})" 
+          style="padding:4px 12px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">
+          📄 Leggi
+        </button>
+      </div>
     </div>
   `).join('');
+}
+
+function readRelease(id, content) {
+  const modal = document.getElementById('release-read-modal');
+  if (!modal) {
+    // Crea il modal se non esiste
+    const m = document.createElement('div');
+    m.id = 'release-read-modal';
+    m.style.cssText = 'display:flex;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;';
+    m.innerHTML = \`
+      <div style="background:white;border-radius:16px;padding:32px;max-width:700px;width:100%;max-height:85vh;overflow-y:auto;position:relative;">
+        <button onclick="document.getElementById('release-read-modal').style.display='none'" 
+          style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
+        <h3 style="color:#1a3a5c;margin-bottom:20px;font-size:18px;">📄 Comunicato stampa</h3>
+        <pre id="release-read-content" style="white-space:pre-wrap;font-family:Georgia,serif;font-size:14px;line-height:1.7;color:#333;"></pre>
+        <button onclick="copyReleaseContent()" 
+          style="margin-top:20px;padding:10px 20px;background:#1a3a5c;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;">
+          📋 Copia testo
+        </button>
+      </div>
+    \`;
+    document.body.appendChild(m);
+    m.addEventListener('click', function(e) { if(e.target === m) m.style.display='none'; });
+  }
+  document.getElementById('release-read-content').textContent = content;
+  document.getElementById('release-read-modal').style.display = 'flex';
+}
+
+function copyReleaseContent() {
+  const text = document.getElementById('release-read-content').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Testo copiato negli appunti!');
+  });
 }
 
 // ===== UTILS =====
