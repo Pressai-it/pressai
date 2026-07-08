@@ -2892,15 +2892,17 @@ function renderArchive(releases) {
     container.innerHTML = '<div class="archive-empty">📁 Il tuo archivio è vuoto.</div>';
     return;
   }
-  container.innerHTML = releases.map(r => `
-    <div class="release-card" style="cursor:pointer;" onclick="readRelease('${r.id}', ${JSON.stringify(r.content).replace(/'/g, "\'")})">
+  // Salva releases in memoria per accesso tramite indice
+  window._cachedReleases = releases;
+  container.innerHTML = releases.map((r, idx) => `
+    <div class="release-card" style="cursor:pointer;" onclick="readRelease(${idx})">
       <div class="release-info">
         <h4>${escapeHtml(r.title)}</h4>
         <span>${new Date(r.date).toLocaleDateString('it-IT')}</span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
-        <button onclick="event.stopPropagation(); readRelease('${r.id}', ${JSON.stringify(r.content).replace(/'/g, "\'")})" 
+        <button onclick="event.stopPropagation(); readRelease(${idx})" 
           style="padding:4px 12px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">
           📄 Leggi
         </button>
@@ -2909,7 +2911,10 @@ function renderArchive(releases) {
   `).join('');
 }
 
-function readRelease(id, content) {
+function readRelease(idx) {
+  const r = window._cachedReleases && window._cachedReleases[idx];
+  if (!r) return;
+  const content = r.content || '';
   const modal = document.getElementById('release-read-modal');
   if (!modal) {
     // Crea il modal se non esiste
