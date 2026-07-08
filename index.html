@@ -464,7 +464,7 @@
   }
 
   /* Main content */
-  .main-content { flex: 1; min-width: 0; padding-bottom: 60px; }
+  .main-content { flex: 1; min-width: 0; }
 
   /* Views */
   .view { display: none; }
@@ -1244,7 +1244,7 @@
       </div>
       
       <details style="margin: 15px 0; padding: 10px; background: #f8f8f8; border-radius: 5px;">
-        <summary style="cursor: pointer; font-weight: bold; color: #1A3A5C;">📋 Dati fiscali azienda <span style="color:#c0392b;font-size:12px;">(obbligatori)</span></summary>
+        <summary style="cursor: pointer; font-weight: bold; color: #1A3A5C;">📋 Dati fiscali (facoltativo per trial)</summary>
         <div style="margin-top: 15px;">
           <div class="form-group">
             <label>Partita IVA</label>
@@ -1486,7 +1486,7 @@
           <span style="color:#c9a84c; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Professional</span>
           <span style="color:#f7f3ec; font-size:32px; font-weight:700; font-family:'Playfair Display',serif;">€249</span>
           <span style="color:rgba(255,255,255,0.5); font-size:12px;">al mese</span>
-          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">5 comunicati/mese</span>
+          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">10 comunicati/mese</span>
           <span style="color:rgba(255,255,255,0.7); font-size:13px;">Email + telefono giornalisti</span>
           <span style="background:#b8860b; color:#fff; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; margin-top:12px;">Acquista →</span>
         </a>
@@ -1494,7 +1494,7 @@
           <span style="color:#c9a84c; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Business</span>
           <span style="color:#f7f3ec; font-size:32px; font-weight:700; font-family:'Playfair Display',serif;">€399</span>
           <span style="color:rgba(255,255,255,0.5); font-size:12px;">al mese</span>
-          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">10 comunicati/mese</span>
+          <span style="color:rgba(255,255,255,0.7); font-size:13px; margin-top:8px;">Comunicati illimitati</span>
           <span style="color:rgba(255,255,255,0.7); font-size:13px;">Email + tel + rassegna stampa</span>
           <span style="background:#b8860b; color:#fff; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; margin-top:12px;">Acquista →</span>
         </a>
@@ -1620,7 +1620,7 @@
               <span style="color:#c9a84c; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Professional</span>
               <span style="color:#f7f3ec; font-size:26px; font-weight:700; font-family:'Playfair Display',serif;">€249</span>
               <span style="color:rgba(255,255,255,0.4); font-size:11px; margin-bottom:6px;">al mese</span>
-              <span style="color:rgba(255,255,255,0.7); font-size:12px;">5 comunicati/mese</span>
+              <span style="color:rgba(255,255,255,0.7); font-size:12px;">10 comunicati/mese</span>
               <span style="color:rgba(255,255,255,0.7); font-size:12px;">Email + telefono</span>
               <span style="background:#b8860b; color:#fff; padding:8px 18px; border-radius:5px; font-size:12px; font-weight:600; margin-top:10px; display:block;">Attiva →</span>
             </a>
@@ -1628,7 +1628,7 @@
               <span style="color:#c9a84c; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Business</span>
               <span style="color:#f7f3ec; font-size:26px; font-weight:700; font-family:'Playfair Display',serif;">€399</span>
               <span style="color:rgba(255,255,255,0.4); font-size:11px; margin-bottom:6px;">al mese</span>
-              <span style="color:rgba(255,255,255,0.7); font-size:12px;">10 comunicati/mese</span>
+              <span style="color:rgba(255,255,255,0.7); font-size:12px;">Illimitati</span>
               <span style="color:rgba(255,255,255,0.7); font-size:12px;">Email + tel + rassegna</span>
               <span style="background:#b8860b; color:#fff; padding:8px 18px; border-radius:5px; font-size:12px; font-weight:600; margin-top:10px; display:block;">Attiva →</span>
             </a>
@@ -1690,17 +1690,13 @@
               rows="1"
               onkeydown="handleKey(event)"
             ></textarea>
-            <button class="btn-send" id="btn-send" onclick="checkDisclaimerAndSend()">➤</button>
+            <button class="btn-send" id="btn-send" onclick="sendMessage()">➤</button>
           </div>
         </div>
 
         <!-- Media outlets section (shown after release is generated) -->
         <div class="outlets-section" id="outlets-section" style="display:none">
           <h3>📰 Testate raccomandate per il tuo comunicato</h3>
-          <p style="font-size:12px; color:rgba(255,255,255,0.45); line-height:1.6; margin:4px 0 16px;">
-            I contatti delle redazioni sono forniti a scopo professionale, per consentire l'invio diretto del comunicato. 
-            L'utente è responsabile dell'invio, della veridicità dei contenuti e del rispetto delle normative vigenti in materia di comunicazioni commerciali e protezione dei dati.
-          </p>
           <div class="trial-notice" id="outlets-trial-notice" style="display:none">
             🔒 Stai usando la prova gratuita. Acquista un piano per accedere ai contatti delle redazioni.
           </div>
@@ -1741,22 +1737,6 @@
       </div>
 
     </main>
-
-    <!-- FOOTER DISCLAIMER -->
-    <footer style="background:#f8f7f4; border-top:1px solid #e0d8cc; padding:14px 24px; text-align:center;">
-      <p style="font-size:11px; color:#999; line-height:1.6; max-width:800px; margin:0 auto;">
-        I comunicati stampa generati da Press AI sono testi automatici basati sulle informazioni fornite dall'utente. 
-        <strong style="color:#777;">La responsabilità della veridicità dei contenuti, dell'invio alle testate e di ogni effetto derivante dalla pubblicazione è esclusivamente dell'utente.</strong>
-        Press AI e Media Comunikiamo non rispondono di eventuali inesattezze o danni derivanti dall'utilizzo dei testi generati.
-        &nbsp;·&nbsp;
-        <a href="#" onclick="openModal('privacy-modal'); return false;" style="color:#b8860b; text-decoration:none;">Privacy Policy</a>
-        &nbsp;·&nbsp;
-        <a href="#" onclick="openModal('cookies-modal'); return false;" style="color:#b8860b; text-decoration:none;">Cookie Policy</a>
-        &nbsp;·&nbsp;
-        <a href="#" onclick="openModal('terms-modal'); return false;" style="color:#b8860b; text-decoration:none;">Termini e Condizioni</a>
-      </p>
-    </footer>
-
   </div>
 </div>
 
@@ -1774,10 +1754,10 @@ const STRIPE_LINKS = {
 };
 
 const PLAN_CREDITS = { 
-  trial: 1,
+  trial: 2,
   starter: 3, 
-  professional: 5, 
-  business: 10 
+  professional: 10, 
+  business: 999 
 };
 
 const MEDIA_OUTLETS = [
@@ -1878,14 +1858,6 @@ Se il comunicato suona come una brochure aziendale → RISCRIVI in stile cronaca
 Se useresti un'esclamazione → TOGLILA
 Se una frase inizia con "Finalmente" o "Oggi più che mai" → CANCELLALA
 
-🚫 DIVIETO ASSOLUTO — REGOLA PIÙ IMPORTANTE DI TUTTE:
-Non inventare MAI nessun dato. Zero tolleranza assoluta.
-❌ VIETATO inventare: dipendenti, fatturati, percentuali, date, iscrizioni Camera di Commercio, codici REA, P.IVA, certificazioni, premi, posizioni di mercato.
-❌ VIETATO citare fonti terze (Istat, Eurostat, Osservatori, ecc.) con numeri inventati. Se non hai il link esatto fornitoti dall'utente, non usare quella fonte.
-✅ SOLO i dati forniti esplicitamente dall'utente in questa conversazione possono entrare nel comunicato.
-✅ Se manca un dato importante, chiedi all'utente: "Puoi fornirmi [dato]?" Non inventarlo mai.
-✅ Se l'utente vuole inserire una statistica esterna, chiedi il link preciso. Senza link verificabile = dato non inseribile.
-
 Scrivi come scrivono i giornalisti professionisti italiani con 20 anni di esperienza in redazioni economiche.`;
 }
 
@@ -1946,7 +1918,6 @@ async function init() {
   if (session) {
     currentUser = session.user;
     await loadUserPlan();
-  await loadReleases();
     // Blocca accesso se trial già completato e non ha piano pagato
     const meta = currentUser.user_metadata || {};
     if (meta.trial_completed && (!meta.plan || meta.plan === 'trial')) {
@@ -2068,7 +2039,7 @@ async function loadUserPlan() {
   
   const creditsUsed = meta.credits_used || 0;
   const planCredits = PLAN_CREDITS[currentPlan];
-  const remaining = Math.max(0, planCredits - creditsUsed);
+  const remaining = planCredits === 999 ? '∞' : Math.max(0, planCredits - creditsUsed);
 
   if (isTrialActive) {
     document.getElementById('user-plan-badge').textContent = 'Prova Gratuita';
@@ -2459,22 +2430,8 @@ function renderUploadedFiles() {
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
-    checkDisclaimerAndSend();
-  }
-}
-
-function checkDisclaimerAndSend() {
-  if (sessionStorage.getItem('disclaimer_accepted')) {
     sendMessage();
-    return;
   }
-  document.getElementById('disclaimer-modal').style.display = 'flex';
-}
-
-function acceptDisclaimerAndGenerate() {
-  sessionStorage.setItem('disclaimer_accepted', '1');
-  document.getElementById('disclaimer-modal').style.display = 'none';
-  sendMessage();
 }
 
 async function sendMessage() {
@@ -2801,60 +2758,20 @@ async function loadPressClippings() {
 }
 
 // ===== RELEASES =====
-async function saveRelease(content) {
+function saveRelease(content) {
+  const releases = getStoredReleases();
   const title = extractTitle(content);
-  const sector = detectSectorFromRelease(content);
-  try {
-    const { data, error } = await sb
-      .from('press_releases')
-      .insert({
-        user_id: currentUser.id,
-        title,
-        content,
-        status: 'draft',
-        sector
-      })
-      .select()
-      .single();
-    if (error) throw error;
-    await loadReleases();
-  } catch(e) {
-    console.error('Errore salvataggio comunicato:', e);
-    // Fallback su localStorage se Supabase non disponibile
-    const releases = getStoredReleases();
-    releases.unshift({ id: Date.now(), title, date: new Date().toISOString(), status: 'draft', content });
-    localStorage.setItem('pressai_releases_' + currentUser.id, JSON.stringify(releases));
-    renderRecentList(releases);
-    renderArchive(releases);
-  }
-}
-
-async function loadReleases() {
-  if (!currentUser) return;
-  try {
-    const { data, error } = await sb
-      .from('press_releases')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    const releases = (data || []).map(r => ({
-      id: r.id,
-      title: r.title,
-      date: r.created_at,
-      status: r.status,
-      content: r.content,
-      sector: r.sector
-    }));
-    renderRecentList(releases);
-    renderArchive(releases);
-    document.getElementById('stat-total').textContent = releases.length;
-  } catch(e) {
-    console.error('Errore caricamento comunicati:', e);
-    const releases = getStoredReleases();
-    renderRecentList(releases);
-    renderArchive(releases);
-  }
+  releases.unshift({
+    id: Date.now(),
+    title,
+    date: new Date().toISOString(),
+    status: 'draft',
+    content
+  });
+  localStorage.setItem('pressai_releases_' + currentUser.id, JSON.stringify(releases));
+  renderRecentList(releases);
+  renderArchive(releases);
+  document.getElementById('stat-total').textContent = releases.length;
 }
 
 function getStoredReleases() {
@@ -2892,59 +2809,15 @@ function renderArchive(releases) {
     container.innerHTML = '<div class="archive-empty">📁 Il tuo archivio è vuoto.</div>';
     return;
   }
-  // Salva releases in memoria per accesso tramite indice
-  window._cachedReleases = releases;
-  container.innerHTML = releases.map((r, idx) => `
-    <div class="release-card" style="cursor:pointer;" onclick="readRelease(${idx})">
+  container.innerHTML = releases.map(r => `
+    <div class="release-card">
       <div class="release-info">
         <h4>${escapeHtml(r.title)}</h4>
         <span>${new Date(r.date).toLocaleDateString('it-IT')}</span>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
-        <button onclick="event.stopPropagation(); readRelease(${idx})" 
-          style="padding:4px 12px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">
-          📄 Leggi
-        </button>
-      </div>
+      <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
     </div>
   `).join('');
-}
-
-function readRelease(idx) {
-  const r = window._cachedReleases && window._cachedReleases[idx];
-  if (!r) return;
-  const content = r.content || '';
-  const modal = document.getElementById('release-read-modal');
-  if (!modal) {
-    // Crea il modal se non esiste
-    const m = document.createElement('div');
-    m.id = 'release-read-modal';
-    m.style.cssText = 'display:flex;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;';
-    m.innerHTML = \`
-      <div style="background:white;border-radius:16px;padding:32px;max-width:700px;width:100%;max-height:85vh;overflow-y:auto;position:relative;">
-        <button onclick="document.getElementById('release-read-modal').style.display='none'" 
-          style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>
-        <h3 style="color:#1a3a5c;margin-bottom:20px;font-size:18px;">📄 Comunicato stampa</h3>
-        <pre id="release-read-content" style="white-space:pre-wrap;font-family:Georgia,serif;font-size:14px;line-height:1.7;color:#333;"></pre>
-        <button onclick="copyReleaseContent()" 
-          style="margin-top:20px;padding:10px 20px;background:#1a3a5c;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;">
-          📋 Copia testo
-        </button>
-      </div>
-    \`;
-    document.body.appendChild(m);
-    m.addEventListener('click', function(e) { if(e.target === m) m.style.display='none'; });
-  }
-  document.getElementById('release-read-content').textContent = content;
-  document.getElementById('release-read-modal').style.display = 'flex';
-}
-
-function copyReleaseContent() {
-  const text = document.getElementById('release-read-content').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    alert('Testo copiato negli appunti!');
-  });
 }
 
 // ===== UTILS =====
@@ -2988,34 +2861,6 @@ document.addEventListener('DOMContentLoaded', () => {
   init();
 });
 </script>
-<!-- MODALE DISCLAIMER RESPONSABILITÀ -->
-<div id="disclaimer-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; align-items:center; justify-content:center; padding:20px;">
-  <div style="background:white; border-radius:16px; padding:32px; max-width:480px; width:100%;">
-    <h3 style="color:#1a3a5c; font-size:18px; margin-bottom:12px;">📋 Prima di generare il comunicato</h3>
-    <p style="font-size:14px; color:#555; line-height:1.6; margin-bottom:20px;">
-      Press AI genera un testo giornalistico professionale basato sulle informazioni che hai fornito.
-    </p>
-    <div style="background:#fdf6e3; border:1px solid #e8d5a3; border-radius:10px; padding:16px; margin-bottom:20px;">
-      <p style="font-size:13px; color:#555; line-height:1.7; margin:0;">
-        ✅ Verifico che tutte le informazioni fornite siano veritiere e accurate.<br>
-        ✅ Sono consapevole che la responsabilità del contenuto del comunicato e del suo invio alle testate è mia.<br>
-        ✅ Ho letto e accetto la <a href="#" onclick="openModal('privacy-modal'); return false;" style="color:#b8860b;">Privacy Policy</a> e i <a href="#" onclick="openModal('terms-modal'); return false;" style="color:#b8860b;">Termini e Condizioni</a>.
-      </p>
-    </div>
-    <div style="display:flex; gap:12px;">
-      <button onclick="document.getElementById('disclaimer-modal').style.display='none'" 
-        style="flex:1; padding:12px; background:white; border:1px solid #ddd; border-radius:8px; cursor:pointer; font-size:14px; color:#777;">
-        Annulla
-      </button>
-      <button onclick="acceptDisclaimerAndGenerate()" 
-        style="flex:2; padding:12px; background:#1a3a5c; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; color:white;">
-        Accetto — Genera il comunicato
-      </button>
-    </div>
-    <p style="font-size:11px; color:#aaa; text-align:center; margin-top:12px;">Questa conferma viene richiesta una sola volta per sessione.</p>
-  </div>
-</div>
-
 <!-- MODALE RESET PASSWORD -->
 <div id="modal-reset-password" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
   <div style="background:#1a3a5c; border-radius:16px; padding:40px; max-width:400px; width:90%; text-align:center;">
