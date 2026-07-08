@@ -1244,7 +1244,7 @@
       </div>
       
       <details style="margin: 15px 0; padding: 10px; background: #f8f8f8; border-radius: 5px;">
-        <summary style="cursor: pointer; font-weight: bold; color: #1A3A5C;">📋 Dati fiscali (facoltativo per trial)</summary>
+        <summary style="cursor: pointer; font-weight: bold; color: #1A3A5C;">📋 Dati fiscali azienda (obbligatori per la fatturazione)</summary>
         <div style="margin-top: 15px;">
           <div class="form-group">
             <label>Partita IVA</label>
@@ -1371,7 +1371,7 @@
       <li><strong>Dati fiscali</strong>: Partita IVA, Ragione Sociale legale, Indirizzo sede legale, Città, Provincia, CAP — raccolti ai fini dell'emissione di fatture elettroniche XML tramite il Sistema di Interscambio (SDI), in adempimento agli obblighi fiscali italiani (D.Lgs. 127/2015 e successive modifiche)</li>
       <li>Dati di navigazione e utilizzo del Servizio</li>
     </ul>
-    <p style="margin-top:8px; font-size:13px; color:#555;">I dati fiscali sono facoltativi durante il periodo di prova gratuita e diventano necessari al momento dell'attivazione di un piano a pagamento per l'emissione della fattura elettronica obbligatoria.</p>
+    <p style="margin-top:8px; font-size:13px; color:#555;">I dati fiscali sono obbligatori per l'emissione della fattura elettronica. Inseriscili subito per non dover tornare su questi dati al momento dell'attivazione del piano.</p>
     
     <h3>3. Finalità del Trattamento</h3>
     <p>I dati personali sono trattati per le seguenti finalità:</p>
@@ -1928,6 +1928,7 @@ async function init() {
     }
     checkTrialStatus();
     showApp();
+    loadReleasesFromSupabase();
   }
 }
 
@@ -1969,6 +1970,7 @@ async function doLogin() {
   }
   checkTrialStatus();
   showApp();
+  loadReleasesFromSupabase();
 }
 
 async function doRegister() {
@@ -2758,20 +2760,44 @@ async function loadPressClippings() {
 }
 
 // ===== RELEASES =====
-function saveRelease(content) {
-  const releases = getStoredReleases();
+async function saveRelease(content) {
   const title = extractTitle(content);
-  releases.unshift({
-    id: Date.now(),
-    title,
-    date: new Date().toISOString(),
-    status: 'draft',
-    content
-  });
+  try {
+    await sb.from('press_releases').insert({
+      user_id: currentUser.id,
+      title,
+      content,
+      status: 'draft',
+      created_at: new Date().toISOString()
+    });
+  } catch(e) { console.warn('Supabase save failed, usando localStorage:', e); }
+  // Aggiorna sempre anche localStorage come cache locale
+  const releases = getStoredReleases();
+  releases.unshift({ id: Date.now(), title, date: new Date().toISOString(), status: 'draft', content });
   localStorage.setItem('pressai_releases_' + currentUser.id, JSON.stringify(releases));
   renderRecentList(releases);
   renderArchive(releases);
   document.getElementById('stat-total').textContent = releases.length;
+}
+
+async function loadReleasesFromSupabase() {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await sb
+      .from('press_releases')
+      .select('id, title, content, status, created_at')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
+    if (error || !data || !data.length) return;
+    const releases = data.map(r => ({
+      id: r.id, title: r.title, date: r.created_at, status: r.status, content: r.content
+    }));
+    // Aggiorna cache locale
+    localStorage.setItem('pressai_releases_' + currentUser.id, JSON.stringify(releases));
+    renderRecentList(releases);
+    renderArchive(releases);
+    document.getElementById('stat-total').textContent = releases.length;
+  } catch(e) { console.warn('Supabase load failed:', e); }
 }
 
 function getStoredReleases() {
@@ -2803,21 +2829,65 @@ function renderRecentList(releases) {
   `).join('');
 }
 
+// Archivio in memoria per accesso sicuro tramite indice
+let _archiveReleases = [];
+
 function renderArchive(releases) {
+  _archiveReleases = releases;
   const container = document.getElementById('archive-list');
   if (!releases.length) {
     container.innerHTML = '<div class="archive-empty">📁 Il tuo archivio è vuoto.</div>';
     return;
   }
-  container.innerHTML = releases.map(r => `
-    <div class="release-card">
+  container.innerHTML = releases.map((r, idx) => `
+    <div class="release-card" data-idx="${idx}" style="cursor:pointer;">
       <div class="release-info">
         <h4>${escapeHtml(r.title)}</h4>
         <span>${new Date(r.date).toLocaleDateString('it-IT')}</span>
       </div>
-      <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
+        <button data-idx="${idx}" class="btn-leggi-release"
+          style="padding:4px 12px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">
+          📄 Leggi
+        </button>
+      </div>
     </div>
   `).join('');
+
+  // Event delegation - sicuro, nessun JS inline
+  container.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-leggi-release');
+    if (btn) {
+      e.stopPropagation();
+      const idx = parseInt(btn.getAttribute('data-idx'));
+      openReleaseModal(_archiveReleases[idx]);
+    }
+  }, { once: true });
+}
+
+function openReleaseModal(release) {
+  let modal = document.getElementById('release-read-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'release-read-modal';
+    modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML = '<div style="background:white;border-radius:16px;padding:32px;max-width:700px;width:100%;max-height:85vh;overflow-y:auto;position:relative;">' +
+      '<button id="close-release-modal" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#888;">✕</button>' +
+      '<h3 style="color:#1a3a5c;margin-bottom:20px;font-size:18px;">📄 Comunicato stampa</h3>' +
+      '<pre id="release-read-content" style="white-space:pre-wrap;font-family:Georgia,serif;font-size:14px;line-height:1.7;color:#333;"></pre>' +
+      '<button id="copy-release-btn" style="margin-top:20px;padding:10px 20px;background:#1a3a5c;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;">📋 Copia testo</button>' +
+      '</div>';
+    document.body.appendChild(modal);
+    document.getElementById('close-release-modal').addEventListener('click', () => { modal.style.display = 'none'; });
+    document.getElementById('copy-release-btn').addEventListener('click', () => {
+      const text = document.getElementById('release-read-content').textContent;
+      navigator.clipboard.writeText(text).then(() => alert('Testo copiato!'));
+    });
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+  }
+  document.getElementById('release-read-content').textContent = release.content || '';
+  modal.style.display = 'flex';
 }
 
 // ===== UTILS =====
