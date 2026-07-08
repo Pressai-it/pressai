@@ -1243,35 +1243,33 @@
         <input type="password" id="reg-password" placeholder="Min. 8 caratteri">
       </div>
       
-      <details style="margin: 15px 0; padding: 10px; background: #f8f8f8; border-radius: 5px;">
-        <summary style="cursor: pointer; font-weight: bold; color: #1A3A5C;">📋 Dati fiscali azienda (obbligatori per la fatturazione)</summary>
-        <div style="margin-top: 15px;">
-          <div class="form-group">
-            <label>Partita IVA</label>
-            <input type="text" id="reg-piva" placeholder="11 cifre es. 01234567890" maxlength="13" required>
-          </div>
-          <div class="form-group">
-            <label>Ragione Sociale</label>
-            <input type="text" id="reg-ragione" placeholder="Nome legale azienda">
-          </div>
-          <div class="form-group">
-            <label>Indirizzo</label>
-            <input type="text" id="reg-indirizzo" placeholder="Via/Piazza, numero">
-          </div>
-          <div class="form-group">
-            <label>Città</label>
-            <input type="text" id="reg-city" placeholder="Milano">
-          </div>
-          <div class="form-group">
-            <label>Provincia</label>
-            <input type="text" id="reg-provincia" placeholder="MI" maxlength="2">
-          </div>
-          <div class="form-group">
-            <label>CAP</label>
-            <input type="text" id="reg-cap" placeholder="20100" maxlength="5">
-          </div>
+      <div style="margin: 15px 0; padding: 14px 16px; background: #f0f4f8; border-radius: 10px; border-left: 3px solid #1A3A5C;">
+        <p style="font-weight: bold; color: #1A3A5C; margin-bottom: 14px;">📋 Dati fiscali azienda <span style="color:#c0392b;font-size:12px;">(obbligatori)</span></p>
+        <div class="form-group">
+          <label>Partita IVA <span style="color:#c0392b;">*</span></label>
+          <input type="text" id="reg-piva" placeholder="11 cifre es. 01234567890" maxlength="13">
         </div>
-      </details>
+        <div class="form-group">
+          <label>Ragione Sociale <span style="color:#c0392b;">*</span></label>
+          <input type="text" id="reg-ragione" placeholder="Nome legale azienda">
+        </div>
+        <div class="form-group">
+          <label>Indirizzo</label>
+          <input type="text" id="reg-indirizzo" placeholder="Via/Piazza, numero">
+        </div>
+        <div class="form-group">
+          <label>Città</label>
+          <input type="text" id="reg-city" placeholder="Milano">
+        </div>
+        <div class="form-group">
+          <label>Provincia</label>
+          <input type="text" id="reg-provincia" placeholder="MI" maxlength="2">
+        </div>
+        <div class="form-group">
+          <label>CAP</label>
+          <input type="text" id="reg-cap" placeholder="20100" maxlength="5">
+        </div>
+      </div>
       
       <button class="btn-primary" onclick="doRegister()">Inizia prova gratuita (7 giorni)</button>
     </div>
@@ -1998,7 +1996,7 @@ async function doRegister() {
   const pressContact = document.getElementById('reg-press-contact').value.trim();
   const password = document.getElementById('reg-password').value;
   
-  // Dati fiscali (facoltativi per trial)
+  // Dati fiscali (obbligatori)
   const piva = document.getElementById('reg-piva').value.trim().replace(/^IT/i, '');
   const ragione = document.getElementById('reg-ragione').value.trim();
   const indirizzo = document.getElementById('reg-indirizzo').value.trim();
