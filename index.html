@@ -1248,7 +1248,7 @@
         <div style="margin-top: 15px;">
           <div class="form-group">
             <label>Partita IVA</label>
-            <input type="text" id="reg-piva" placeholder="IT00000000000">
+            <input type="text" id="reg-piva" placeholder="11 cifre es. 01234567890" maxlength="13" required>
           </div>
           <div class="form-group">
             <label>Ragione Sociale</label>
@@ -1973,6 +1973,23 @@ async function doLogin() {
   loadReleasesFromSupabase();
 }
 
+// Validazione P.IVA italiana (algoritmo ufficiale checksum)
+function validaPartitaIVA(piva) {
+  piva = piva.replace(/[^0-9]/g, ''); // rimuove tutto tranne cifre
+  if (piva.length !== 11) return false;
+  let s = 0;
+  for (let i = 0; i < 11; i++) {
+    let n = parseInt(piva[i]);
+    if (i % 2 === 0) {
+      s += n;
+    } else {
+      n *= 2;
+      s += n > 9 ? n - 9 : n;
+    }
+  }
+  return s % 10 === 0;
+}
+
 async function doRegister() {
   const company = document.getElementById('reg-company').value.trim();
   const email = document.getElementById('reg-email').value.trim();
@@ -1982,15 +1999,20 @@ async function doRegister() {
   const password = document.getElementById('reg-password').value;
   
   // Dati fiscali (facoltativi per trial)
-  const piva = document.getElementById('reg-piva').value.trim();
+  const piva = document.getElementById('reg-piva').value.trim().replace(/^IT/i, '');
   const ragione = document.getElementById('reg-ragione').value.trim();
   const indirizzo = document.getElementById('reg-indirizzo').value.trim();
   const city = document.getElementById('reg-city').value.trim();
   const provincia = document.getElementById('reg-provincia').value.trim();
   const cap = document.getElementById('reg-cap').value.trim();
 
-  if (!company || !email || !phone || !password) return showMsg('Compila email, azienda, telefono e password.', 'error');
+  if (!company || !email || !phone || !password) return showMsg('Compila tutti i campi obbligatori: azienda, email, telefono e password.', 'error');
   if (password.length < 8) return showMsg('La password deve essere di almeno 8 caratteri.', 'error');
+
+  // Validazione P.IVA obbligatoria
+  if (!piva) return showMsg('La Partita IVA è obbligatoria per la fatturazione elettronica.', 'error');
+  if (!validaPartitaIVA(piva)) return showMsg('Partita IVA non valida. Inserisci le 11 cifre senza prefisso IT.', 'error');
+  if (!ragione) return showMsg('La ragione sociale è obbligatoria.', 'error');
 
   showLoading(true);
   
