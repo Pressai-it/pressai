@@ -1243,31 +1243,32 @@
         <input type="password" id="reg-password" placeholder="Min. 8 caratteri">
       </div>
       
-      <div style="margin: 15px 0; padding: 14px 16px; background: #f0f4f8; border-radius: 10px; border-left: 3px solid #1A3A5C;">
-        <p style="font-weight: bold; color: #1A3A5C; margin-bottom: 14px;">📋 Dati fiscali azienda <span style="color:#c0392b;font-size:12px;">(obbligatori)</span></p>
+      <div style="margin: 15px 0; padding: 14px 16px; background: #f0f4f8; border-radius: 10px; border-left: 3px solid #B8860B;">
+        <p style="font-weight: bold; color: #1A3A5C; margin-bottom: 4px;">📋 Dati fiscali azienda</p>
+        <p style="font-size:12px; color:#777; margin-bottom: 14px;">Facoltativi ora — richiesti automaticamente al momento dell'attivazione del piano per la fatturazione elettronica.</p>
         <div class="form-group">
-          <label>Partita IVA <span style="color:#c0392b;">*</span></label>
-          <input type="text" id="reg-piva" placeholder="11 cifre es. 01234567890" maxlength="13">
+          <label>Partita IVA</label>
+          <input type="text" id="reg-piva" placeholder="Es. 01234567890 (11 cifre)" maxlength="13">
         </div>
         <div class="form-group">
-          <label>Ragione Sociale <span style="color:#c0392b;">*</span></label>
-          <input type="text" id="reg-ragione" placeholder="Nome legale azienda">
+          <label>Ragione Sociale</label>
+          <input type="text" id="reg-ragione" placeholder="Nome legale dell'azienda">
         </div>
         <div class="form-group">
-          <label>Indirizzo</label>
-          <input type="text" id="reg-indirizzo" placeholder="Via/Piazza, numero">
+          <label>Indirizzo sede legale</label>
+          <input type="text" id="reg-indirizzo" placeholder="Via/Piazza e numero civico">
         </div>
         <div class="form-group">
           <label>Città</label>
-          <input type="text" id="reg-city" placeholder="Milano">
+          <input type="text" id="reg-city" placeholder="Es. Milano">
         </div>
         <div class="form-group">
           <label>Provincia</label>
-          <input type="text" id="reg-provincia" placeholder="MI" maxlength="2">
+          <input type="text" id="reg-provincia" placeholder="Es. MI" maxlength="2">
         </div>
         <div class="form-group">
           <label>CAP</label>
-          <input type="text" id="reg-cap" placeholder="20100" maxlength="5">
+          <input type="text" id="reg-cap" placeholder="Es. 20100" maxlength="5">
         </div>
       </div>
       
@@ -2007,10 +2008,8 @@ async function doRegister() {
   if (!company || !email || !phone || !password) return showMsg('Compila tutti i campi obbligatori: azienda, email, telefono e password.', 'error');
   if (password.length < 8) return showMsg('La password deve essere di almeno 8 caratteri.', 'error');
 
-  // Validazione P.IVA obbligatoria
-  if (!piva) return showMsg('La Partita IVA è obbligatoria per la fatturazione elettronica.', 'error');
-  if (!validaPartitaIVA(piva)) return showMsg('Partita IVA non valida. Inserisci le 11 cifre senza prefisso IT.', 'error');
-  if (!ragione) return showMsg('La ragione sociale è obbligatoria.', 'error');
+  // Validazione P.IVA (solo se inserita)
+  if (piva && !validaPartitaIVA(piva)) return showMsg('Partita IVA non valida. Inserisci le 11 cifre senza prefisso IT (es. 01234567890).', 'error');
 
   showLoading(true);
   
