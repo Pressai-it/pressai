@@ -1272,6 +1272,11 @@
             <input type="text" id="reg-cap" placeholder="20100" maxlength="5" style="width:100%;padding:10px 12px;background:white;border:1px solid #ccd;border-radius:7px;color:#333;font-size:14px;outline:none;">
           </div>
         </div>
+        <div style="margin-bottom:4px;">
+          <label style="display:block;font-size:12px;color:#1A3A5C;font-weight:600;margin-bottom:5px;letter-spacing:0.5px;">PEC (per fatturazione elettronica)</label>
+          <input type="email" id="reg-pec" placeholder="Es. azienda@pec.it" style="width:100%;padding:10px 12px;background:white;border:1px solid #ccd;border-radius:7px;color:#333;font-size:14px;outline:none;">
+          <p style="font-size:11px;color:#999;margin-top:4px;">La PEC è necessaria per ricevere le fatture elettroniche tramite SDI.</p>
+        </div>
       </div>
       
       <button class="btn-primary" onclick="doRegister()">Inizia prova gratuita (7 giorni)</button>
@@ -2028,6 +2033,7 @@ async function doRegister() {
         website: website,
         press_contact: pressContact || company,
         p_iva: piva,
+        pec: document.getElementById('reg-pec')?.value.trim() || '',
         ragione_sociale: ragione,
         indirizzo: indirizzo,
         city: city,
