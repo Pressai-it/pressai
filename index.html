@@ -1243,32 +1243,34 @@
         <input type="password" id="reg-password" placeholder="Min. 8 caratteri">
       </div>
       
-      <div style="margin: 15px 0; padding: 14px 16px; background: #f0f4f8; border-radius: 10px; border-left: 3px solid #B8860B;">
-        <p style="font-weight: bold; color: #1A3A5C; margin-bottom: 4px;">📋 Dati fiscali azienda</p>
-        <p style="font-size:12px; color:#777; margin-bottom: 14px;">Facoltativi ora — richiesti automaticamente al momento dell'attivazione del piano per la fatturazione elettronica.</p>
-        <div class="form-group">
-          <label>Partita IVA</label>
-          <input type="text" id="reg-piva" placeholder="Es. 01234567890 (11 cifre)" maxlength="13">
+      <div style="margin: 15px 0; padding: 16px; background: #f0f4f8; border-radius: 10px; border-left: 3px solid #B8860B;">
+        <p style="font-weight: bold; color: #1A3A5C; margin-bottom: 4px; font-size:14px;">📋 Dati fiscali azienda</p>
+        <p style="font-size:12px; color:#777; margin-bottom: 16px;">Facoltativi ora — richiesti al momento dell'attivazione del piano per la fatturazione elettronica.</p>
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:12px;color:#1A3A5C;font-weight:600;margin-bottom:5px;letter-spacing:0.5px;">PARTITA IVA</label>
+          <input type="text" id="reg-piva" placeholder="Es. 01234567890 (11 cifre)" maxlength="13" style="width:100%;padding:10px 12px;background:white;border:1px solid #ccd;border-radius:7px;color:#333;font-size:14px;outline:none;">
         </div>
-        <div class="form-group">
-          <label>Ragione Sociale</label>
-          <input type="text" id="reg-ragione" placeholder="Nome legale dell'azienda">
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:12px;color:#1A3A5C;font-weight:600;margin-bottom:5px;letter-spacing:0.5px;">RAGIONE SOCIALE</label>
+          <input type="text" id="reg-ragione" placeholder="Nome legale dell'azienda" style="width:100%;padding:10px 12px;background:white;border:1px solid #ccd;border-radius:7px;color:#333;font-size:14px;outline:none;">
         </div>
-        <div class="form-group">
-          <label>Indirizzo sede legale</label>
-          <input type="text" id="reg-indirizzo" placeholder="Via/Piazza e numero civico">
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:12px;color:#1A3A5C;font-weight:600;margin-bottom:5px;letter-spacing:0.5px;">INDIRIZZO SEDE LEGALE</label>
+          <input type="text" id="reg-indirizzo" placeholder="Via/Piazza e numero civico" style="width:100%;padding:10px 12px;background:white;border:1px solid #ccd;border-radius:7px;color:#333;font-size:14px;outline:none;">
         </div>
-        <div class="form-group">
-          <label>Città</label>
-          <input type="text" id="reg-city" placeholder="Es. Milano">
-        </div>
-        <div class="form-group">
-          <label>Provincia</label>
-          <input type="text" id="reg-provincia" placeholder="Es. MI" maxlength="2">
-        </div>
-        <div class="form-group">
-          <label>CAP</label>
-          <input type="text" id="reg-cap" placeholder="Es. 20100" maxlength="5">
+        <div style="display:flex;gap:10px;margin-bottom:12px;">
+          <div style="flex:2;">
+            <label style="display:block;font-size:12px;color:#1A3A5C;font-weight:600;margin-bottom:5px;letter-spacing:0.5px;">CITTÀ</label>
+            <input type="text" id="reg-city" placeholder="Es. Milano" style="width:100%;padding:10px 12px;background:white;border:1px solid #ccd;border-radius:7px;color:#333;font-size:14px;outline:none;">
+          </div>
+          <div style="flex:1;">
+            <label style="display:block;font-size:12px;color:#1A3A5C;font-weight:600;margin-bottom:5px;letter-spacing:0.5px;">PROV.</label>
+            <input type="text" id="reg-provincia" placeholder="MI" maxlength="2" style="width:100%;padding:10px 12px;background:white;border:1px solid #ccd;border-radius:7px;color:#333;font-size:14px;outline:none;">
+          </div>
+          <div style="flex:1;">
+            <label style="display:block;font-size:12px;color:#1A3A5C;font-weight:600;margin-bottom:5px;letter-spacing:0.5px;">CAP</label>
+            <input type="text" id="reg-cap" placeholder="20100" maxlength="5" style="width:100%;padding:10px 12px;background:white;border:1px solid #ccd;border-radius:7px;color:#333;font-size:14px;outline:none;">
+          </div>
         </div>
       </div>
       
