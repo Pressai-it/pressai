@@ -2299,8 +2299,21 @@ async function adminImpersonate(userId, userEmail) {
     if (data.error) throw new Error(data.error);
 
     // Mostra dati utente in un pannello
-    const meta = data.user?.user_metadata || {};
-    alert(`ACCOUNT: ${userEmail}\n\nAzienda: ${meta.company_name || '—'}\nTelefono: ${meta.phone || '—'}\nPiano: ${meta.plan || 'trial'}\nCrediti usati: ${meta.credits_used || 0}\nTrial scaduto: ${meta.trial_completed ? 'Sì' : 'No'}\nP.IVA: ${meta.p_iva || '—'}\nReferente stampa: ${meta.press_contact || '—'}`);
+    const p = data.profile || {};
+    alert(
+      'ACCOUNT: ' + userEmail + '\n\n' +
+      'Azienda: ' + (p.ragione_sociale || p.company_name || '—') + '\n' +
+      'Telefono: ' + (p.phone || '—') + '\n' +
+      'Partita IVA: ' + (p.p_iva || '—') + '\n' +
+      'PEC: ' + (p.pec || '—') + '\n' +
+      'Indirizzo: ' + (p.indirizzo || '—') + ' ' + (p.city || '') + ' ' + (p.provincia || '') + '\n' +
+      'Sito web: ' + (p.website || '—') + '\n' +
+      'Referente stampa: ' + (p.press_contact || '—') + '\n\n' +
+      'Piano: ' + (p.plan || 'trial').toUpperCase() + '\n' +
+      'Crediti usati: ' + (p.credits_used || 0) + '\n' +
+      'Trial scaduto: ' + (p.trial_completed ? 'Sì' : 'No') + '\n' +
+      'Comunicati generati: ' + (data.releases?.length || 0)
+    );
   } catch(e) {
     alert('Errore: ' + e.message);
   }
