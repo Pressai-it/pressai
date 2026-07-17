@@ -2023,31 +2023,29 @@ async function doRegister() {
   const trialEnd = new Date();
   trialEnd.setDate(trialEnd.getDate() + 7);
   
-  const { data, error } = await sb.auth.signUp({
-    email, 
-    password,
-    options: { 
-      data: { 
-        company_name: company,
-        phone: phone,
-        website: website,
-        press_contact: pressContact || company,
-        p_iva: piva,
-        pec: document.getElementById('reg-pec')?.value.trim() || '',
-        ragione_sociale: ragione,
-        indirizzo: indirizzo,
-        city: city,
-        provincia: provincia,
-        cap: cap,
-        plan: 'trial',
-        trial_end_date: trialEnd.toISOString(),
-        credits_used: 0 
-      } 
-    }
+  // Usa la function server-side per salvare TUTTI i dati in profiles
+  const res = await fetch('/.netlify/functions/register-user', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email, password,
+      company_name: company,
+      phone: phone,
+      website: website,
+      press_contact: pressContact || company,
+      p_iva: piva,
+      pec: document.getElementById('reg-pec')?.value.trim() || '',
+      ragione_sociale: ragione,
+      indirizzo: indirizzo,
+      city: city,
+      provincia: provincia,
+      cap: cap
+    })
   });
+  const result = await res.json();
   showLoading(false);
 
-  if (error) return showMsg(error.message, 'error');
+  if (result.error) return showMsg(result.error, 'error');
   showMsg('Account creato! Controlla la tua email per confermare, poi accedi per iniziare la prova gratuita di 7 giorni.', 'success');
 }
 
