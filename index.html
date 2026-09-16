@@ -2868,7 +2868,7 @@ function renderRecentList(releases) {
         <h4>${escapeHtml(r.title)}</h4>
         <span>${new Date(r.date).toLocaleDateString('it-IT')}</span>
       </div>
-      <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
+      <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : r.status === 'closed' ? 'Chiuso' : 'Bozza'}</span>
     </div>
   `).join('');
 }
@@ -2884,30 +2884,68 @@ function renderArchive(releases) {
     return;
   }
   container.innerHTML = releases.map((r, idx) => `
-    <div class="release-card" data-idx="${idx}" style="cursor:pointer;">
+    <div class="release-card" data-idx="${idx}">
       <div class="release-info">
         <h4>${escapeHtml(r.title)}</h4>
         <span>${new Date(r.date).toLocaleDateString('it-IT')}</span>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : 'Inviato'}</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span class="release-status status-${r.status}">${r.status === 'draft' ? 'Bozza' : r.status === 'closed' ? 'Chiuso' : 'Bozza'}</span>
         <button data-idx="${idx}" class="btn-leggi-release"
           style="padding:4px 12px;background:#1a3a5c;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">
           📄 Leggi
         </button>
+        ${r.status !== 'closed' ? `<button data-idx="${idx}" class="btn-chiudi-release"
+          style="padding:4px 12px;background:#27ae60;color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">
+          ✓ Chiudi comunicato
+        </button>` : ''}
       </div>
     </div>
   `).join('');
 
-  // Event delegation - sicuro, nessun JS inline
-  container.addEventListener('click', function(e) {
-    const btn = e.target.closest('.btn-leggi-release');
-    if (btn) {
+  // Rimuovi vecchi listener prima di aggiungerne uno nuovo
+  const newContainer = container.cloneNode(true);
+  container.parentNode.replaceChild(newContainer, container);
+
+  // Event delegation persistente
+  newContainer.addEventListener('click', function(e) {
+    const btnLeggi = e.target.closest('.btn-leggi-release');
+    if (btnLeggi) {
       e.stopPropagation();
-      const idx = parseInt(btn.getAttribute('data-idx'));
+      const idx = parseInt(btnLeggi.getAttribute('data-idx'));
       openReleaseModal(_archiveReleases[idx]);
+      return;
     }
-  }, { once: true });
+    const btnChiudi = e.target.closest('.btn-chiudi-release');
+    if (btnChiudi) {
+      e.stopPropagation();
+      const idx = parseInt(btnChiudi.getAttribute('data-idx'));
+      closeRelease(idx);
+    }
+  });
+}
+
+async function closeRelease(idx) {
+  const release = _archiveReleases[idx];
+  if (!release) return;
+  if (!confirm('Segni questo comunicato come chiuso? Non sarà più modificabile.')) return;
+  try {
+    await sb.from('press_releases').update({ status: 'closed' }).eq('id', release.id).eq('user_id', currentUser.id);
+    _archiveReleases[idx].status = 'closed';
+    // Aggiorna anche localStorage
+    const stored = getStoredReleases();
+    const storedIdx = stored.findIndex(r => r.id === release.id);
+    if (storedIdx >= 0) {
+      stored[storedIdx].status = 'closed';
+      localStorage.setItem('pressai_releases_' + currentUser.id, JSON.stringify(stored));
+    }
+    await loadReleasesFromSupabase();
+  } catch(e) {
+    console.error('Errore chiusura comunicato:', e);
+    // Fallback: aggiorna solo localmente
+    _archiveReleases[idx].status = 'closed';
+    renderArchive(_archiveReleases);
+  }
 }
 
 function openReleaseModal(release) {
