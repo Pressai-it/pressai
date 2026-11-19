@@ -1,0 +1,45 @@
+# Press AI - controllo automatico che tiene sveglio il database Supabase.
+#
+# Perché serve: nel piano gratuito Supabase mette in pausa il progetto
+# dopo 7 giorni senza attività. Questo controllo fa una piccolissima
+# lettura ogni 3 giorni, così il database resta sempre attivo.
+#
+# Sicurezza: usa la chiave pubblica "anon" (la stessa già presente nel sito)
+# e le regole di sicurezza (RLS) impediscono di leggere i dati dei clienti.
+# Non modifica nulla e non consuma crediti Netlify.
+
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '17 6 */3 * *'   # ogni 3 giorni alle 06:17 UTC (07:17 ora italiana)
+  workflow_dispatch:          # permette di avviarlo a mano con il pulsante "Run workflow"
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Contatta il database Supabase
+        env:
+          SUPABASE_URL: https://mvqgonxzhwsfmanvoxpn.supabase.co
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12cWdvbnh6aHdzZm1hbnZveHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NDcyNDcsImV4cCI6MjA5MTEyMzI0N30.TZI7XuiDJqfPR8CcGVzPyzvJrNT5y-bggPYg0_L0WSI
+        run: |
+          for tentativo in 1 2 3; do
+            codice=$(curl -s -o risposta.txt -w "%{http_code}" --max-time 30 \
+              "$SUPABASE_URL/rest/v1/press_releases?select=id&limit=1" \
+              -H "apikey: $SUPABASE_ANON_KEY" \
+              -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+            echo "Tentativo $tentativo: risposta $codice"
+            if [ "$codice" -ge 200 ] && [ "$codice" -lt 300 ]; then
+              echo "OK: Supabase ha risposto, il database e' attivo."
+              exit 0
+            fi
+            head -c 300 risposta.txt; echo
+            sleep 20
+          done
+          echo "ATTENZIONE: Supabase non risponde."
+          echo "Controlla il progetto: https://supabase.com/dashboard/project/mvqgonxzhwsfmanvoxpn"
+          exit 1
