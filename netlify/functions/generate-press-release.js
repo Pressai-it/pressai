@@ -3,6 +3,31 @@
 
 const fetch = require('node-fetch');
 
+// Data reale di oggi, in ora italiana (es. "19 novembre 2026").
+// Viene calcolata dal server a ogni richiesta, così il comunicato
+// riporta sempre la data del giorno in cui viene generato.
+function dataDiOggi() {
+  return new Intl.DateTimeFormat('it-IT', {
+    timeZone: 'Europe/Rome',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  }).format(new Date());
+}
+
+// Istruzioni sulla data, aggiunte in fondo al prompt di sistema.
+// Senza queste righe l'AI non sa che giorno è e scrive una data vecchia.
+function istruzioniData(oggi) {
+  return `
+
+DATA DI OGGI (OBBLIGATORIA):
+Oggi è ${oggi}.
+- Nella dateline del comunicato usa SEMPRE ed ESATTAMENTE questa data: CITTÀ (PROV), ${oggi} –
+- Non usare mai un'altra data per la dateline e non scrivere date passate come se fossero quella di oggi.
+- Le espressioni "oggi", "quest'anno", "lo scorso anno", "il mese prossimo" vanno calcolate rispetto a questa data.
+- Per le date di eventi, lanci o scadenze usa solo quelle fornite dall'utente: se mancano, chiedile, non inventarle.`;
+}
+
 exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return {
@@ -14,6 +39,9 @@ exports.handler = async (event, context) => {
   try {
     const { messages, system } = JSON.parse(event.body);
 
+    // Prompt di sistema inviato dalla pagina + data reale di oggi
+    const systemConData = (typeof system === 'string' ? system : '') + istruzioniData(dataDiOggi());
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -24,7 +52,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 4096,
-        system: system,
+        system: systemConData,
         messages: messages
       })
     });
